@@ -3,7 +3,7 @@ package main;
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
 
-public class JokeClientAdmin {
+public class JokeClientAdmin extends Thread {
 	Socket sock; // Main class for creating a server connection
 	JokeClientAdmin (Socket s) {sock = s;}
 	 

@@ -8,48 +8,29 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class JokeClient {
+	
+	private static int serverPort = 4545;
 
 	public static void main (String args[]) {
 		
+		// Get user name 
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("Please enter your name");
 	    String userName = scanner.nextLine(); 
 	    System.out.println("You entered: " + userName);  		
 	    
-	    /* 
-		 String serverName;
-		 
-		 if (args.length < 1) serverName = "localhost";
-		 else serverName = args[0];
-
-		
-		 BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		 try {
-		 String name;
-		 do {
-		 System.out.print
-		 ("Enter a hostname or an IP address, (quit) to end: ");
-		 System.out.flush ();
-		 name = in.readLine ();
-		 if (name.indexOf("quit") < 0)
-		 getRemoteAddress(name, serverName);
-		 } while (name.indexOf("quit") < 0); // quitSmoking.com?
-		 System.out.println ("Cancelled by user request.");
-		 } catch (IOException x) {x.printStackTrace ();}
-		 */
-	}
-		 
+	    String serverName = "localhost";	    
+	    
+	    // Connect to Joke Server 
+	    while(true) {
+	    	getRemoteAddress(userName, serverName);
+	    }
+	}		 
 	
-	// Converts byte to string 
-	private static String toText (byte ip[]) { 
-		StringBuffer result = new StringBuffer();
-		for (int i = 0; i < ip.length; ++i) {
-			if (i > 0) result.append(".");
-				result.append(0xff & ip[i]);
-		}
-		return result.toString();
-	}	
+	private static void connectToServer() {
 		
+	}
+	
 	// Gets the address of a given server 
 	private static void getRemoteAddress (String name, String serverName) {
 		
@@ -60,7 +41,7 @@ public class JokeClient {
 		
 		try {
 			/* Open connection to given server port */
-			sock = new Socket(serverName, 4545);
+			sock = new Socket(serverName, serverPort);
 			
 			// Create I/O streams to read data to/from the socket
 			fromServer = new BufferedReader(new InputStreamReader(sock.getInputStream()));	// Read input from server
@@ -80,6 +61,18 @@ public class JokeClient {
 			System.out.println("Socket error.");
 			x.printStackTrace();
 		}
-	}		
+	}			
+	
+	// Converts byte to string 
+	private static String toText (byte ip[]) { 
+		StringBuffer result = new StringBuffer();
+		for (int i = 0; i < ip.length; ++i) {
+			if (i > 0) result.append(".");
+				result.append(0xff & ip[i]);
+		}
+		return result.toString();
+	}	
+		
+	
 	
 }

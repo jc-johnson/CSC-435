@@ -18,10 +18,10 @@ public class JokeServer {
 			
 			// Get server connection and pass to Worker to start
 			System.out.println
-				("Jordan Johnson's Joke server 1.8 starting up, listening at port 4545.\n");
+				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
 			while (true) {
 				sock = servsock.accept(); // accepts client connection
-				new Worker(sock).start(); // Spawn worker to handle connection as a thread 
+				new JokeClientAdmin(sock).start(); // Spawn worker to handle connection as a thread 
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
