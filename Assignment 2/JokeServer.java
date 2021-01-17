@@ -7,21 +7,21 @@ import java.net.Socket;
 public class JokeServer {
 
 	public static void main(String[] args) {
-		int q_len = 6; // Number of requests to queue
+		int queuelength = 6; 
 		int port = 4545;
 		String ServerName = "localhost";
-		Socket sock;
+		Socket socket;
 
-		ServerSocket servsock;
+		ServerSocket serversocket;
 		try {
-			servsock = new ServerSocket(port, q_len);
+			serversocket = new ServerSocket(port, queuelength);
 			
-			// Get server connection and pass to Worker to start
+			// Get server connection and pass socket to Worker to start
 			System.out.println
 				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
 			while (true) {
-				sock = servsock.accept(); // accepts client connection
-				new JokeClientAdmin(sock).start(); // Spawn worker to handle connection as a thread 
+				socket = serversocket.accept(); // accepts client connection
+				new JokeClientAdmin(socket).start(); // Spawn worker to handle connection as a thread 
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
