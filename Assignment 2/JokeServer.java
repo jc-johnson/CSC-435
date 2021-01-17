@@ -50,7 +50,8 @@ public class JokeServer {
 			while (true) {
 				socket = serversocket.accept(); // Accepts client connection
 				System.out.println(jokeServer.getState()); // return server state
-				new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
+				// new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
+				new JokeClientAdmin(jokeServer, socket).start(); // Client admin class handles this thread's work 
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

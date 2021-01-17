@@ -3,22 +3,59 @@ package main;
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
 
+// This class does the main work for all connecting threads 
 public class JokeClientAdmin extends Thread {
-	Socket socket; // Main class for creating a server connection
-	JokeClientAdmin (Socket s) {socket = s;}
+	
+	private JokeServer jokeServer;
+	private Socket socket; // Main class for creating a server connection
+	
+	public JokeClientAdmin (Socket socket) {
+		
+		this.socket = socket;
+	}
+	
+	public JokeClientAdmin (JokeServer jokeServer, Socket socket) {
+		
+		this.jokeServer = jokeServer;
+		this.socket = socket;
+	}
+	
+	public String getServerState() {
+		
+		if (jokeServer != null) {
+			
+			String serverState = jokeServer.getState(); 
+			
+			if(!serverState.isEmpty()) {
+				
+				System.out.println("The server is in " + serverState + "mode.");
+				return serverState;
+			}
+		}
+		
+		return "";
+		// throw new exception
+	}
+	
+	public void run(){
+		getServerState();
+	}
+	
 	 
+	/* 
 	public void run() {
 		 // Get I/O streams in/out from the socket - let's you read data in and out and print 
 		 PrintStream out = null;
 		 BufferedReader in = null;
 		 try {
-			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));	// Reading data in from socket
-			 out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
+			 // in = new BufferedReader (new InputStreamReader(socket.getInputStream()));	// Reading data in from socket
+			 // out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
 			 try {
 				 String name;
-				 name = in.readLine();
-				 System.out.println("Looking up " + name);
-				 printRemoteAddress(name, out);	// Simply print server address to out stream 
+				 // name = in.readLine();
+				 // System.out.println("Looking up " + name);
+				 // printRemoteAddress(name, out);	// Simply print server address to out stream
+				 
 			 } catch (IOException x) {
 				 System.out.println("Server read error");
 				 x.printStackTrace();
@@ -28,6 +65,7 @@ public class JokeClientAdmin extends Thread {
 			 System.out.println(ioe);		 
 		 }
 	 }
+	 */
 	 
 	 // Print given server address 
 	 static void printRemoteAddress(String name, PrintStream out) {
