@@ -36,8 +36,32 @@ public class JokeServer {
 		state = ServerState.JOKE;
 	}
 	
+	public String getJoke(int index) {
+		if(index < jokes.size() || index < 0)
+			throw new IndexOutOfBoundsException();
+		return jokes.get(index);
+	}
+	
+	public String getProverb(int index) {
+		if(index < proverbs.size() || index < 0)
+			throw new IndexOutOfBoundsException();
+		return proverbs.get(index);
+	}
+	
 	public String getState() {
 		return state.name();
+	}
+	
+	public void printAllJokes() {
+		for(Map.Entry<Integer, String> entry : jokes.entrySet())
+			System.out.println(
+					"Joke " + entry.getValue() + ": \n " + entry.getValue());
+	}
+	
+	public void printAllProverbs() {
+		for(Map.Entry<Integer, String> entry : proverbs.entrySet())
+			System.out.println(
+					"Proverb " + entry.getValue() + ": \n " + entry.getValue());
 	}
 	
 	private void toggleServerState() {
@@ -49,7 +73,7 @@ public class JokeServer {
 			}
 		}
 		
-		// throw new Exception 
+		throw new NullPointerException("Server state is null."); 
 	}
 
 	public static void main(String[] args) {
