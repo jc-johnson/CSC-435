@@ -9,6 +9,10 @@ public class JokeClientAdmin extends Thread {
 	private JokeServer jokeServer;
 	private Socket socket; // Main class for creating a server connection
 	
+	// Input/Output streams to write data to/from socket 
+	private PrintStream printStream; 			// Print output to server 
+	private BufferedReader bufferedReader;		
+	
 	public JokeClientAdmin (Socket socket) {
 		
 		this.socket = socket;
@@ -16,8 +20,23 @@ public class JokeClientAdmin extends Thread {
 	
 	public JokeClientAdmin (JokeServer jokeServer, Socket socket) {
 		
-		this.jokeServer = jokeServer;
-		this.socket = socket;
+		if(jokeServer != null && socket != null) {
+			
+			try {
+				
+				this.jokeServer = jokeServer;
+				this.socket = socket;
+				// Input/Output streams to write data to/from socket
+				this.printStream = new PrintStream(socket.getOutputStream());
+				this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		// else throw new null argument exception
 	}
 	
 	public String getServerState() {
@@ -25,6 +44,8 @@ public class JokeClientAdmin extends Thread {
 		if (jokeServer != null) {
 			
 			String serverState = jokeServer.getState(); 
+			printStream.println("The server is in " + serverState + " mode.");
+			printStream.flush();
 			
 			if(!serverState.isEmpty()) {
 				
@@ -38,10 +59,6 @@ public class JokeClientAdmin extends Thread {
 	}
 	
 	public void run(){
-		PrintStream toServer;toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
-		BufferedReader fromServer;
-		toServer.println(name); 
-		toServer.flush();
 		
 		getServerState();
 	}
