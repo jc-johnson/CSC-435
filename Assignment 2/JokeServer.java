@@ -5,6 +5,29 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class JokeServer {
+	
+	private enum ServerState {
+		JOKE, PROVERB
+	}
+	
+	private ServerState state = ServerState.JOKE;
+	
+	public String getState() {
+		return state.name();
+	}
+	
+	private void toggleServerState() {
+		if (state != null) {
+			if(state.equals(ServerState.JOKE)) {
+				state = ServerState.PROVERB;
+			} else {
+				state = ServerState.JOKE;
+			}
+		}
+		
+		// throw new Exception 
+		
+	}
 
 	public static void main(String[] args) {
 		int queuelength = 6; 
@@ -20,8 +43,8 @@ public class JokeServer {
 			System.out.println
 				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
 			while (true) {
-				socket = serversocket.accept(); // accepts client connection
-				new JokeClientAdmin(socket).start(); // Spawn worker to handle connection as a thread 
+				socket = serversocket.accept(); // Accepts client connection
+				new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
