@@ -2,6 +2,7 @@ package main;
 
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
+import java.util.Map;
 
 // This class does the main work for all connecting threads 
 public class JokeClientAdmin extends Thread {
@@ -38,6 +39,22 @@ public class JokeClientAdmin extends Thread {
 		// else throw new null argument exception
 	}
 	
+	public String getJoke(int index) {
+		if(jokeServer != null) {
+			return jokeServer.getJoke(index);
+		} else {
+			throw new NullPointerException("Joke Server is null.");
+		}
+	}
+	
+	public String getProverb(int index) {
+		if(jokeServer != null) {
+			return jokeServer.getProverb(index);
+		} else {
+			throw new NullPointerException("Joke Server is null.");
+		}
+	}
+	
 	public String getServerState() {
 		
 		if (jokeServer != null) {
@@ -56,18 +73,42 @@ public class JokeClientAdmin extends Thread {
 		// throw new exception
 	}
 	
+	public void printAllJokes() {
+		if(jokeServer != null) {
+			for(int i = 0; i < 4; i++) {
+				String joke = jokeServer.getJoke(i);
+				printStream.println(joke);
+				printStream.flush();
+			}
+		} else {
+			throw new NullPointerException("Joke Server is null.");
+		}
+	}
+	
+	public void printAllProverbs() {
+		if(jokeServer != null) {
+			for(int i = 0; i < 4; i++) {
+				String proverb = jokeServer.getJoke(i);
+				printStream.println(proverb);
+				printStream.flush();
+			}
+		} else {
+			throw new NullPointerException("Joke Server is null.");
+		}
+	}	
+	
 	public void run(){
 		
 		getServerState();
 	}
 	 
-	 // Convert byte to string 
-	 static String toText(byte ip[]) { 
-		 StringBuffer result = new StringBuffer();
-		 for (int i = 0; i < ip.length; ++i) {
-			 if (i > 0) result.append(".");
-			 result.append((0xff &ip[i]));
-		 }
-		 return result.toString();
-	 }
+	// Convert byte to string 
+	static String toText(byte ip[]) { 
+		StringBuffer result = new StringBuffer();
+		for (int i = 0; i < ip.length; ++i) {
+			if (i > 0) result.append(".");
+			result.append((0xff &ip[i]));
+		}
+		return result.toString();
+	}
 }
