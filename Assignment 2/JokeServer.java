@@ -10,7 +10,11 @@ public class JokeServer {
 		JOKE, PROVERB
 	}
 	
-	private ServerState state = ServerState.JOKE;
+	private ServerState state; 
+	
+	public JokeServer() {
+		state = ServerState.JOKE;
+	}
 	
 	public String getState() {
 		return state.name();
@@ -26,16 +30,17 @@ public class JokeServer {
 		}
 		
 		// throw new Exception 
-		
 	}
 
 	public static void main(String[] args) {
 		int queuelength = 6; 
 		int port = 4545;
 		String ServerName = "localhost";
-		Socket socket;
-
+		Socket socket;		
+		JokeServer jokeServer = new JokeServer();
+		
 		ServerSocket serversocket;
+		
 		try {
 			serversocket = new ServerSocket(port, queuelength);
 			
@@ -44,6 +49,7 @@ public class JokeServer {
 				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
 			while (true) {
 				socket = serversocket.accept(); // Accepts client connection
+				System.out.println(jokeServer.getState()); // return server state
 				new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
 			}
 		} catch (IOException e) {

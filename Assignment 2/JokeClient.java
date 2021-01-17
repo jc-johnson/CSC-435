@@ -34,18 +34,18 @@ public class JokeClient {
 	// Gets the address of a given server 
 	private static void getRemoteAddress (String name, String serverName) {
 		
-		Socket sock; // the main class we will use to create a server connection
+		Socket socket; // the main class we will use to create a server connection
 		BufferedReader fromServer;
 		PrintStream toServer;
 		String textFromServer;
 		
 		try {
 			/* Open connection to given server port */
-			sock = new Socket(serverName, serverPort);
+			socket = new Socket(serverName, serverPort);
 			
 			// Create I/O streams to read data to/from the socket
-			fromServer = new BufferedReader(new InputStreamReader(sock.getInputStream()));	// Read input from server
-			toServer = new PrintStream(sock.getOutputStream());	// Print output to server 
+			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
+			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
 			
 			toServer.println(name); 
 			toServer.flush();
@@ -55,7 +55,7 @@ public class JokeClient {
 				textFromServer = fromServer.readLine();
 				if (textFromServer != null) System.out.println(textFromServer);
 			}
-			sock.close();	//Close socket 
+			socket.close();	//Close socket 
 			
 		} catch (IOException x){
 			System.out.println("Socket error.");

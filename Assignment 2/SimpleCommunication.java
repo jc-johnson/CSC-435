@@ -43,23 +43,21 @@ public class SimpleCommunication {
 	System.out.println("In AMethod the string is: " + classVariableString);
 	System.out.println("\nNow setting a new value to the class variable, containing AAAA...\n");
     classVariableString = "NEW value of class variable set in AMethod... (AAAA).\n";
-  }
+    }
   
-  public void BMethod  () {    // Method definition
-    System.out.println("Hello from BMethod.\n");
-    System.out.println("In Bmethod the string is now " + classVariableString);
-    System.out.println("So we set the value in AMethod, and read the new value in BMethod\n");
-    System.out.println("We used a class variable, and nothing was static.\n");
-  }
+    public void BMethod  () {    // Method definition
+    	System.out.println("Hello from BMethod.\n");
+    	System.out.println("In Bmethod the string is now " + classVariableString);
+    	System.out.println("So we set the value in AMethod, and read the new value in BMethod\n");
+    	System.out.println("We used a class variable, and nothing was static.\n");
+    }
   
-  public static void main(String a[]) throws IOException {
-    
-    SimpleCommunication AnInstance = new SimpleCommunication(); // Create the Object
-    System.out.println("\nHELLO FROM MAIN.\n");
-    AnInstance.AMethod();
-    AnInstance.BMethod();
-    System.out.println("GOODBYE FROM MAIN.\n");
-    
-  }
+    public static void main(String a[]) throws IOException {
+    	SimpleCommunication AnInstance = new SimpleCommunication(); // Create the Object
+    	System.out.println("\nHELLO FROM MAIN.\n");
+    	AnInstance.AMethod();
+    	AnInstance.BMethod();
+    	System.out.println("GOODBYE FROM MAIN.\n");    
+    }
 
 }

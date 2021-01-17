@@ -4,16 +4,16 @@ import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
 
 public class JokeClientAdmin extends Thread {
-	Socket sock; // Main class for creating a server connection
-	JokeClientAdmin (Socket s) {sock = s;}
+	Socket socket; // Main class for creating a server connection
+	JokeClientAdmin (Socket s) {socket = s;}
 	 
 	public void run() {
 		 // Get I/O streams in/out from the socket - let's you read data in and out and print 
 		 PrintStream out = null;
 		 BufferedReader in = null;
 		 try {
-			 in = new BufferedReader (new InputStreamReader(sock.getInputStream()));	// Reading data in from socket
-			 out = new PrintStream(sock.getOutputStream());								// Print data out from socket 
+			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));	// Reading data in from socket
+			 out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
 			 try {
 				 String name;
 				 name = in.readLine();
@@ -23,13 +23,13 @@ public class JokeClientAdmin extends Thread {
 				 System.out.println("Server read error");
 				 x.printStackTrace();
 			 }
-			 sock.close(); // close this connection, but not the server
+			 socket.close(); // close this connection, but not the server
 		 } catch (IOException ioe) {
 			 System.out.println(ioe);		 
 		 }
 	 }
 	 
-	// Print given server address 
+	 // Print given server address 
 	 static void printRemoteAddress(String name, PrintStream out) {
 		 try {
 			 out.println("Looking up " + name + "...");
