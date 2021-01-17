@@ -28,7 +28,7 @@ public class JokeClientAdmin extends Thread {
 			
 			if(!serverState.isEmpty()) {
 				
-				System.out.println("The server is in " + serverState + "mode.");
+				System.out.println("The server is in " + serverState + " mode.");
 				return serverState;
 			}
 		}
@@ -38,6 +38,11 @@ public class JokeClientAdmin extends Thread {
 	}
 	
 	public void run(){
+		PrintStream toServer;toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
+		BufferedReader fromServer;
+		toServer.println(name); 
+		toServer.flush();
+		
 		getServerState();
 	}
 	

@@ -1,6 +1,7 @@
 package main;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -49,6 +50,7 @@ public class JokeServer {
 				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
 			while (true) {
 				socket = serversocket.accept(); // Accepts client connection
+		
 				System.out.println(jokeServer.getState()); // return server state
 				// new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
 				new JokeClientAdmin(jokeServer, socket).start(); // Client admin class handles this thread's work 

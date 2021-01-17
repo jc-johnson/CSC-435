@@ -10,25 +10,24 @@ import java.util.Scanner;
 public class JokeClient {
 	
 	private static int serverPort = 4545;
+	private static String serverName = "localhost" ; 
 
 	public static void main (String args[]) {
 		
-		// Get user name 
-		Scanner scanner = new Scanner(System.in);
-		System.out.println("Please enter your name");
-	    String userName = scanner.nextLine(); 
-	    System.out.println("You entered: " + userName);  		
-	    
-	    String serverName = "localhost";	    
-	    
 	    // Connect to Joke Server 
 	    while(true) {
-	    	getRemoteAddress(userName, serverName);
+	    	getRemoteAddress(serverName, serverName);
 	    }
 	}		 
 	
-	private static void connectToServer() {
-		
+
+	// Gets next phrase from a server
+	private static void getNextPhrase(String serverName) {
+		// Connect to Joke Server 
+	    while(true) {
+	    	getRemoteAddress(serverName, serverName);
+	    }
+	    
 	}
 	
 	// Gets the address of a given server 
