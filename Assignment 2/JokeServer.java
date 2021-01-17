@@ -4,12 +4,21 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
+import java.util.ArrayList; 
+import java.util.Arrays; 
 
 public class JokeServer {
 	
 	private enum ServerState {
 		JOKE, PROVERB
 	}
+	
+	private List<String> jokes = new ArrayList<>(
+		Arrays.asList("", "", "", ""));
+	
+	private List<String> proverbs = new ArrayList<>(
+		Arrays.asList("", "", "", ""));
 	
 	private ServerState state; 
 	
@@ -53,6 +62,7 @@ public class JokeServer {
 				System.out.println(jokeServer.getState()); // return server state
 				// new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
 				new JokeClientAdmin(jokeServer, socket).start(); // Client admin class handles this thread's work 
+				jokeServer.toggleServerState(); // toggle state after each connection
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
