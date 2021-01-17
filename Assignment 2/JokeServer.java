@@ -5,23 +5,33 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList; 
-import java.util.Arrays; 
+import java.util.Arrays;
+import java.util.HashMap; 
 
 public class JokeServer {
 	
 	private enum ServerState {
 		JOKE, PROVERB
 	}
+		
+	private ServerState state;
 	
-	private List<String> jokes = new ArrayList<>(
-		Arrays.asList("", "", "", ""));
+	Map<Integer, String> jokes = new HashMap<Integer, String>() {{
+	    put(1, "How does a cucumber become a pickle?\n \t\t It goes through a jarring experience.");
+	    put(2, "What's brown and sticky? \\n \\t\\t A stick.");
+	    put(3, "What did one volcano say to the other? \\n \\t\\t I lava you.");
+	    put(4, "What do you call two birds in love? \\n \\t\\t Tweethearts.");
+	}};
 	
-	private List<String> proverbs = new ArrayList<>(
-		Arrays.asList("", "", "", ""));
-	
-	private ServerState state; 
-	
+	Map<Integer, String> proverbs = new HashMap<Integer, String>() {{
+	    put(1, "A bad workman always blames his tools.");
+	    put(2, "A drowning man will clutch at a straw.");
+	    put(3, "Adversity and loss make a man wise.");
+	    put(4, "A stitch in time saves nine.");
+	}};
+		
 	public JokeServer() {
 		state = ServerState.JOKE;
 	}
