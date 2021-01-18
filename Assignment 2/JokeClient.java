@@ -102,7 +102,7 @@ public class JokeClient {
 			toServer.flush();
 			
 			// Read 2-3 lines of response from server and prints the response 
-			for (int i = 1; i <= 3; i++) {
+			for (int i = 1; i <= 5; i++) {
 				textFromServer = fromServer.readLine();
 				if (textFromServer != null) System.out.println(textFromServer);
 			}

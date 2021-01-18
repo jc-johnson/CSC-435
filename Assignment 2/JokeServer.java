@@ -73,17 +73,17 @@ public class JokeServer {
 	private ServerState state;
 	
 	Map<Integer, String> clientData = new HashMap<Integer, String>() {{
-	    put(1, "How does a cucumber become a pickle?\n \t\t It goes through a jarring experience.");
-	    put(2, "What's brown and sticky? \\n \\t\\t A stick.");
-	    put(3, "What did one volcano say to the other? \\n \\t\\t I lava you.");
-	    put(4, "What do you call two birds in love? \\n \\t\\t Tweethearts.");
+	    put(1, " ");
+	    put(2, " ");
+	    put(3, " ");
+	    put(4, " ");
 	}};
 	
 	Map<Integer, String> jokes = new HashMap<Integer, String>() {{
-	    put(1, "How does a cucumber become a pickle?\n \t\t It goes through a jarring experience.");
-	    put(2, "What's brown and sticky? \\n \\t\\t A stick.");
-	    put(3, "What did one volcano say to the other? \\n \\t\\t I lava you.");
-	    put(4, "What do you call two birds in love? \\n \\t\\t Tweethearts.");
+	    put(1, "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
+	    put(2, "What's brown and sticky? \n \t A stick.");
+	    put(3, "What did one volcano say to the other? \n \t I lava you.");
+	    put(4, "What do you call two birds in love? \n \t Tweethearts.");
 	}};
 	
 	Map<Integer, String> proverbs = new HashMap<Integer, String>() {{
@@ -98,14 +98,10 @@ public class JokeServer {
 	}
 	
 	public String getJoke(int index) {
-		if(index < jokes.size() || index < 0)
-			throw new IndexOutOfBoundsException();
 		return jokes.get(index);
 	}
 	
 	public String getProverb(int index) {
-		if(index < proverbs.size() || index < 0)
-			throw new IndexOutOfBoundsException();
 		return proverbs.get(index);
 	}
 	

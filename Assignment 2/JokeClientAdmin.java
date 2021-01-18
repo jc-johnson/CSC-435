@@ -130,7 +130,7 @@ public class JokeClientAdmin extends Thread {
 	
 	public void printAllJokes() {
 		if(jokeServer != null) {
-			for(int i = 0; i < 4; i++) {
+			for(int i = 1; i < 4; i++) {
 				String joke = jokeServer.getJoke(i);
 				printStream.println(joke);
 				printStream.flush();
@@ -142,11 +142,12 @@ public class JokeClientAdmin extends Thread {
 	
 	public void printAllProverbs() {
 		if(jokeServer != null) {
-			for(int i = 0; i < 4; i++) {
-				String proverb = jokeServer.getJoke(i);
+			for(int i = 1; i < 5; i++) {
+				String proverb = jokeServer.getProverb(i);
 				printStream.println(proverb);
 				printStream.flush();
 			}
+			// printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
 		}
@@ -155,9 +156,13 @@ public class JokeClientAdmin extends Thread {
 	// Main logic in class 
 	public void run(){
 		
-		getServerState();
-		printAllJokes();
-		printAllProverbs();
+		String state = getServerState();
+		
+		if (state.equals("PROVERB")) {
+			printAllProverbs();
+		} else if (state.equals("JOKE")) {
+			printAllJokes();
+		}	
 	}
 	 
 	// Convert byte to string 
