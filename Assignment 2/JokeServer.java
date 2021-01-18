@@ -4,7 +4,7 @@
 
 2. Java version used, if not the official version for the class:
 
-e.g. build 1.5.0_06-b05
+e.g. build build 11.0.4+11
 
 3. Precise command-line compilation examples / instructions:
 

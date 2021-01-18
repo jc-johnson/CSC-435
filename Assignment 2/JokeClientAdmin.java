@@ -4,7 +4,7 @@
 
 2. Java version used, if not the official version for the class:
 
-e.g. build 1.5.0_06-b05
+e.g. build build 11.0.4+11
 
 3. Precise command-line compilation examples / instructions:
 
@@ -135,6 +135,8 @@ public class JokeClientAdmin extends Thread {
 				printStream.println(joke);
 				printStream.flush();
 			}
+			printStream.println("JOKE CYCLE COMPLETED");
+			printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
 		}
@@ -147,7 +149,8 @@ public class JokeClientAdmin extends Thread {
 				printStream.println(proverb);
 				printStream.flush();
 			}
-			// printStream.flush();
+			printStream.println("PROVERB CYCLE COMPLETED"); 
+			printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
 		}
