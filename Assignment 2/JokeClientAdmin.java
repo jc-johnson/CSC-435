@@ -57,6 +57,7 @@ package main;
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
 import java.util.Map;
+import java.util.Random;
 
 // This class does the main work for all connecting threads 
 public class JokeClientAdmin extends Thread {
@@ -107,6 +108,42 @@ public class JokeClientAdmin extends Thread {
 		} else {
 			throw new NullPointerException("Joke Server is null.");
 		}
+	}
+	
+	// Start on a random joke and print the rest 
+	public String getRandomJoke() {
+		if(jokeServer != null) {
+			int random = new Random().nextInt(5);
+			
+			for(int i = random; i < 4; i++) {
+				String joke = jokeServer.getJoke(i);
+				printStream.println(joke);
+				printStream.flush();
+			}
+			printStream.println("JOKE CYCLE COMPLETED");
+			printStream.flush();
+		} else {
+			throw new NullPointerException("Joke Server is null.");
+		}
+		return "";
+	}	
+	
+	// Start on a random proverb and print the rest 
+	public String getRandomProverb() {
+		if(jokeServer != null) {
+			int random = new Random().nextInt(5);
+			
+			for(int i = random; i < 4; i++) {
+				String proverb = jokeServer.getProverb(i);
+				printStream.println(proverb);
+				printStream.flush();
+			}
+			printStream.println("PROVERB CYCLE COMPLETED");
+			printStream.flush();
+		} else {
+			throw new NullPointerException("Joke Server is null.");
+		}
+		return "";
 	}
 	
 	public String getServerState() {
