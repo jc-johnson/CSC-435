@@ -60,21 +60,20 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class JokeClient {
 	
 	private static int serverPort = 4545;
 	private static String serverName = "localhost" ; 
+	
+	private static UUID uuid; // Unique id to store record of last recieved message
 
-	public static void main (String args[]) {
-		
-	    // Connect to Joke Server 
-	    while(true) {
-	    	getRemoteAddress(serverName, serverName);
-	    	
-	    }
-	}		 
-
+	
+	public JokeClient() {
+		this.uuid=UUID.randomUUID(); //Generates random UUID    
+	}
+	
 	// Gets next phrase from a server
 	private static void getNextPhrase(String serverName) {
 		// Connect to Joke Server 
@@ -124,6 +123,13 @@ public class JokeClient {
 		return result.toString();
 	}	
 		
-	
+	public static void main (String args[]) {
+		
+	    // Connect to Joke Server 
+	    while(true) {
+	    	getRemoteAddress(serverName, serverName);
+	    	
+	    }
+	}		 
 	
 }

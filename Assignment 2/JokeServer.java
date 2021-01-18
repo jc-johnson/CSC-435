@@ -60,6 +60,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.ArrayList; 
 import java.util.Arrays;
 import java.util.HashMap; 
@@ -72,12 +73,7 @@ public class JokeServer {
 		
 	private ServerState state;
 	
-	Map<Integer, String> clientData = new HashMap<Integer, String>() {{
-	    put(1, " ");
-	    put(2, " ");
-	    put(3, " ");
-	    put(4, " ");
-	}};
+	Map<UUID, String> clientData = new HashMap<UUID, String>();
 	
 	Map<Integer, String> jokes = new HashMap<Integer, String>() {{
 	    put(1, "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
@@ -95,6 +91,15 @@ public class JokeServer {
 		
 	public JokeServer() {
 		state = ServerState.JOKE;
+	}
+	
+	// Inserts record of the last message a client received 
+	public void addClientRecord(UUID uuid, String lastString) {
+		clientData.put(uuid, lastString);
+	}
+	
+	public void getClientRecord(UUID uuid) {
+		clientData.get(uuid);
 	}
 	
 	public String getJoke(int index) {
