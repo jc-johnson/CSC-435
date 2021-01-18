@@ -151,11 +151,11 @@ public class JokeClientAdmin extends Thread {
 		if (jokeServer != null) {
 			
 			String serverState = jokeServer.getState(); 
-			printStream.println("The server is in " + serverState + " mode.");
-			printStream.flush();
 			
 			if(!serverState.isEmpty()) {
 				System.out.println("The server is in " + serverState + " mode.");
+				printStream.println("The server is in " + serverState + " mode.");
+				printStream.flush();
 				return serverState;
 			}
 		} else {

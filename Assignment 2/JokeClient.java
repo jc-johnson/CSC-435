@@ -61,6 +61,7 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class JokeClient {
 	
@@ -96,14 +97,20 @@ public class JokeClient {
 			// Create I/O streams to read data to/from the socket
 			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
 			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
+			textFromServer = fromServer.readLine();
 			
 			toServer.println(name); 
 			toServer.flush();
 			
-			// Read 2-3 lines of response from server and prints the response 
-			for (int i = 1; i <= 5; i++) {
+			// Read all responses from server
+			long length = 0;
+			while ((textFromServer != null)) {
+				if (textFromServer.isEmpty()) {
+			        break;
+			    }
 				textFromServer = fromServer.readLine();
-				if (textFromServer != null) System.out.println(textFromServer);
+				System.out.println(textFromServer);
+		        length += textFromServer.length();
 			}
 			socket.close();	//Close socket 
 			
