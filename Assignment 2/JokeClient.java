@@ -10,7 +10,9 @@ e.g. build build 11.0.4+11
 
 e.g.:
 
-> javac JokeServer.java
+javac JokeServer.java
+javac JokeClient.java
+
 
 
 4. Precise examples / instructions to run this program:

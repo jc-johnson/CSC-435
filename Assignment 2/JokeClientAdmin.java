@@ -120,7 +120,7 @@ public class JokeClientAdmin extends Thread {
 				printStream.println(joke);
 				printStream.flush();
 			}
-			printStream.println("JOKE CYCLE COMPLETED");
+			printStream.println("\n JOKE CYCLE COMPLETED \n");
 			printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
@@ -138,7 +138,7 @@ public class JokeClientAdmin extends Thread {
 				printStream.println(proverb);
 				printStream.flush();
 			}
-			printStream.println("PROVERB CYCLE COMPLETED");
+			printStream.println("\n PROVERB CYCLE COMPLETED \n");
 			printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
@@ -172,7 +172,7 @@ public class JokeClientAdmin extends Thread {
 				printStream.println(joke);
 				printStream.flush();
 			}
-			printStream.println("JOKE CYCLE COMPLETED");
+			printStream.println("\n JOKE CYCLE COMPLETED \n");
 			printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
@@ -186,7 +186,7 @@ public class JokeClientAdmin extends Thread {
 				printStream.println(proverb);
 				printStream.flush();
 			}
-			printStream.println("PROVERB CYCLE COMPLETED"); 
+			printStream.println("\n PROVERB CYCLE COMPLETED \n"); 
 			printStream.flush();
 		} else {
 			throw new NullPointerException("Joke Server is null.");
@@ -198,11 +198,23 @@ public class JokeClientAdmin extends Thread {
 		
 		String state = getServerState();
 		
-		if (state.equals("PROVERB")) {
-			printAllProverbs();
-		} else if (state.equals("JOKE")) {
-			printAllJokes();
-		}	
+		while (true) {
+			if (state.equals("PROVERB")) {
+				for (int i = 0; i < 3; i++) {
+					printAllProverbs();
+				}
+				for (int i = 0; i < 3; i++) {
+					printAllJokes();
+				}
+			} else if (state.equals("JOKE")) {
+				for (int i = 0; i < 3; i++) {
+					printAllJokes();
+				}
+				for (int i = 0; i < 3; i++) {
+					printAllProverbs();
+				}
+			}
+		}		
 	}
 	 
 	// Convert byte to string 

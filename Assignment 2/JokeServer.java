@@ -43,6 +43,8 @@ e.g.:
 
 5. Notes:
 
+If you start the Client before the Server, you will get an error until you also start the Server.  
+
 e.g.:
 
 I faked the random number generator. I have a bug that comes up once every
