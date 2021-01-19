@@ -62,6 +62,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.ArrayList; 
 import java.util.Arrays;
@@ -77,19 +79,34 @@ public class JokeServer {
 	
 	Map<UUID, String> clientData = new HashMap<UUID, String>();
 	
-	Map<Integer, String> jokes = new HashMap<Integer, String>() {{
+	Map<Integer, String> jokes = new HashMap<>() {{
 	    put(1, "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
 	    put(2, "What's brown and sticky? \n \t A stick.");
 	    put(3, "What did one volcano say to the other? \n \t I lava you.");
 	    put(4, "What do you call two birds in love? \n \t Tweethearts.");
 	}};
 	
-	Map<Integer, String> proverbs = new HashMap<Integer, String>() {{
+	NavigableMap<String, String> jokeSymbols = new TreeMap<>() {{
+	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
+	    put("JB", "What's brown and sticky? \n \t A stick.");
+	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
+	    put("JD", "What do you call two birds in love? \n \t Tweethearts.");
+	}};
+	
+	Map<Integer, String> proverbs = new HashMap<>() {{
 	    put(1, "A bad workman always blames his tools.");
 	    put(2, "A drowning man will clutch at a straw.");
 	    put(3, "Adversity and loss make a man wise.");
 	    put(4, "A stitch in time saves nine.");
 	}};
+	
+	NavigableMap<String, String> proverbSymbols = new TreeMap<>() {{
+	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
+	    put("JB", "What's brown and sticky? \n \t A stick.");
+	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
+	    put("JD", "What do you call two birds in love? \n \t Tweethearts.");
+	}};
+	
 		
 	public JokeServer() {
 		state = ServerState.JOKE;
@@ -100,6 +117,7 @@ public class JokeServer {
 		clientData.put(uuid, lastString);
 	}
 	
+	// Get the symbol of the last message a client received 
 	public void getClientRecord(UUID uuid) {
 		clientData.get(uuid);
 	}
@@ -108,8 +126,36 @@ public class JokeServer {
 		return jokes.get(index);
 	}
 	
+	public String getJoke(String index) {
+		return jokeSymbols.get(index);
+	}
+	
+	public String getNextJoke(String index) {
+		Map.Entry<String, String> next = jokeSymbols.higherEntry(index);
+		return next.getValue();
+	}
+	
+	public String getPreviousJoke(String index) {
+		Map.Entry<String, String> previous = jokeSymbols.higherEntry(index);
+		return previous.getValue();
+	}
+	
 	public String getProverb(int index) {
 		return proverbs.get(index);
+	}
+	
+	public String getProverb(String index) {
+		return proverbSymbols.get(index);
+	}
+	
+	public String getNextProverb(String index) {
+		Map.Entry<String, String> next = proverbSymbols.higherEntry(index);
+		return next.getValue();
+	}
+	
+	public String getPreviousProverb(String index) {
+		Map.Entry<String, String> previous = proverbSymbols.higherEntry(index);
+		return previous.getValue();
 	}
 	
 	public String getState() {

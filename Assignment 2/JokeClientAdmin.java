@@ -199,6 +199,12 @@ public class JokeClientAdmin extends Thread {
 		String state = getServerState();
 		
 		while (true) {
+			
+			for (int i = 1; i <= 4; i++) {
+				
+				
+			}
+			
 			if (state.equals("PROVERB")) {
 				for (int i = 0; i < 3; i++) {
 					printAllProverbs();
