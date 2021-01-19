@@ -63,6 +63,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.ArrayList; 
@@ -130,6 +131,20 @@ public class JokeServer {
 		return jokeSymbols.get(index);
 	}
 	
+	// Get joke code associated with a given joke string
+	public String getJokeCode(String jokeString) {
+		Set<String> jokeKeys = jokeSymbols.keySet();
+		
+		for (String key : jokeKeys) {
+			if(jokeSymbols.get(key).equals(jokeString)) {
+				return key;
+			}
+		}
+		
+		throw new IllegalArgumentException("No code found for given joke.");
+		
+	}
+	
 	public String getNextJoke(String index) {
 		Map.Entry<String, String> next = jokeSymbols.higherEntry(index);
 		return next.getValue();
@@ -147,6 +162,20 @@ public class JokeServer {
 	public String getProverb(String index) {
 		return proverbSymbols.get(index);
 	}
+	
+	// Get joke code associated with a given joke string
+		public String getProverbCode(String jokeString) {
+			Set<String> jokeKeys = jokeSymbols.keySet();
+			
+			for (String key : jokeKeys) {
+				if(jokeSymbols.get(key).equals(jokeString)) {
+					return key;
+				}
+			}
+			
+			throw new IllegalArgumentException("No code found for given joke.");
+			
+		}
 	
 	public String getNextProverb(String index) {
 		Map.Entry<String, String> next = proverbSymbols.higherEntry(index);
@@ -173,6 +202,7 @@ public class JokeServer {
 			System.out.println(
 					"Proverb " + entry.getValue() + ": \n " + entry.getValue());
 	}
+	
 	
 	private void toggleServerState() {
 		if (state != null) {
