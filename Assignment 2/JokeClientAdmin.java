@@ -69,6 +69,8 @@ public class JokeClientAdmin extends Thread {
 	private PrintStream printStream; 			// Print output to server 
 	private BufferedReader bufferedReader;		
 	
+	private static HttpCookie httpCookie;
+	
 	public JokeClientAdmin (Socket socket) {
 		
 		this.socket = socket;
@@ -199,6 +201,21 @@ public class JokeClientAdmin extends Thread {
 		// Some instances of JokeClientAdmin are just worker classes and aren't initialized with a server 
 		if (jokeServer != null) {
 			String state = getServerState();
+			
+			// send cookie to joke server 
+			if(httpCookie != null) {
+				String uuid = httpCookie.getName();
+				String lastString = httpCookie.getValue();
+			}
+			
+			
+			
+			
+			
+		
+		// This is just a worker thread 
+		} else if (jokeServer == null) {
+			
 		}
 		
 		
@@ -239,6 +256,7 @@ public class JokeClientAdmin extends Thread {
 		return result.toString();
 	}
 	
+	// Main job is to listen for connections
 	public static void main(String[] args) {
 		int queuelength = 6; 
 		int port = 4546;
@@ -250,21 +268,28 @@ public class JokeClientAdmin extends Thread {
 		ObjectOutputStream objectToServer; 
 	    ObjectInputStream objectFromServer;
 		
+	    // Server starts listening for connections
 		try {
 			serverSocket = new ServerSocket(port, queuelength);
 			
-			// Get server connection and pass socket to Worker to start
 			System.out.println
 				("Jordan Johnson's Joke Client Admin starting up, listening at port 4546.\n");
+
 			while (true) {
+			
 				socket = serverSocket.accept(); // Accepts client connection  
 				
 				objectToServer = new ObjectOutputStream(socket.getOutputStream());
 			    objectFromServer = new ObjectInputStream(socket.getInputStream());
 			    
-			    HttpCookie cookie = (HttpCookie) objectFromServer.readObject();
+			    // read in cookie from connection
+			    httpCookie = (HttpCookie) objectFromServer.readObject();
 			    
-				new JokeClientAdmin(socket).start(); // Client admin class handles this thread's work -- alternative constructor  
+			    System.out.println("Http Cookie name: " + httpCookie.getName());
+			    System.out.println("Http Cookie value: " + httpCookie.getValue());
+			    			    
+				new JokeClientAdmin(socket).start(); 	// Client admin class handles this thread's work using  alternative constructor.
+														// Connects to Joke Server and sends cookie 
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -81,8 +81,12 @@ public class JokeClient {
 	private String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
 	private static String lastCode;	// Code for the last message that was ran
 	
+	private HttpCookie httpCookie;
+	
 	public JokeClient() {
-		this.uuid=UUID.randomUUID(); //Generates random UUID    
+		this.uuid=UUID.randomUUID(); //Generates random UUID
+		this.lastCode="";
+		this.httpCookie = new HttpCookie(uuid.toString(), lastCode);
 	}
 	
 	private static void connectToAdminServer(String serverName) {
@@ -140,7 +144,7 @@ public class JokeClient {
 	    ObjectInputStream objectFromServer;
 		
 		try {
-			/* Open connection to given server port */
+			// Trying to connect to admin server
 			socket = new Socket(serverName, adminServerPort);
 			
 			// Create I/O streams to read data to/from the socket
@@ -151,8 +155,9 @@ public class JokeClient {
 			objectToServer = new ObjectOutputStream(socket.getOutputStream());
 		    objectFromServer = new ObjectInputStream(socket.getInputStream());
 		    
-		    // Write object to server
+		    // Write object cookie to server
 		    objectToServer.writeObject(httpCookie);
+		    
 			toServer.println("Connected to " + serverName + "."); 
 			toServer.flush();
 			
@@ -180,6 +185,16 @@ public class JokeClient {
 	    while(true) {
 	    	getRemoteAddress(serverName, serverName);
 	    }
+	}
+	
+	// Return a copy of httpCookie 
+	public HttpCookie getCookie() {
+		if (this.httpCookie != null) {
+			HttpCookie tempCookie = this.httpCookie;
+			return tempCookie;
+		}
+		
+		return null;
 	}
 	
 	// Gets the address of a given server 
@@ -273,16 +288,44 @@ public class JokeClient {
 		}
 		return result.toString();
 	}	
-		
+	
+	// Main job is to try to connect to an admin server 
 	public static void main(String args[]) {
-	    // Connect to Joke Server 
-	    while(true) {
-	    	// getRemoteAddress(serverName, serverName);
-	    	
-	    	// Create cookie to send to server
-	    	HttpCookie httpCookie = new HttpCookie(uuid.toString(), lastCode);
-	    	connectToAdminServer(serverName, httpCookie); 
-	    	
+			
+		String serverName;
+		if (args.length < 1) serverName = "localhost";
+		else serverName = args[0];
+		System.out.println("Jordan Johnson's Joker Client\n");
+		System.out.println("Using server: " + serverName + ", Port: 4546");
+		
+		// Get user input
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String userName;
+		System.out.print("Enter your name please, (quit) to end: ");
+		System.out.flush();
+		try {
+			userName = in.readLine();
+			System.out.println("Welcome " + userName + "\n");
+			if (userName.indexOf("quit") < 0) {
+				 getRemoteAddress(userName, serverName);
+				JokeClient jokeClient = new JokeClient();
+			
+				// Connect to Joke Server 
+				while(true) {
+		    	// getRemoteAddress(serverName, serverName);
+		    	
+		    	// Create cookie to send to server
+		    	HttpCookie httpCookie = jokeClient.getCookie();
+		    	connectToAdminServer(serverName, httpCookie);
+				}
+				
+				// User enters 'quit'			
+			}	else if (userName.indexOf("quit") < 0) {
+				System.out.println ("Cancelled by user request.");
+			}			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 	    	
 	    }
 	}		 
