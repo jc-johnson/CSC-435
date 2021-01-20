@@ -89,6 +89,12 @@ public class JokeClient {
 		this.httpCookie = new HttpCookie(uuid.toString(), lastCode);
 	}
 	
+	private static HttpCookie connectToAdmin(String serverName, HttpCookie httpCookie) {
+		
+		
+		return null;
+	}
+	
 	private static void connectToAdminServer(String serverName) {
 		Socket socket; // the main class we will use to create a server connection
 		BufferedReader fromServer;
@@ -179,6 +185,8 @@ public class JokeClient {
 		}
 	}
 	
+	
+	
 	// Gets next phrase from a server
 	private static void getNextPhrase(String serverName) {
 		// Connect to Joke Server 
@@ -256,7 +264,6 @@ public class JokeClient {
 				throw new IllegalArgumentException("Empty code in cookie value");
 			}
 			
-			
 			toServer.println(name); 
 			
 			toServer.flush();
@@ -277,7 +284,7 @@ public class JokeClient {
 			System.out.println("Socket error.");
 			x.printStackTrace();
 		}
-	}		
+	}	
 	
 	// Converts byte to string 
 	private static String toText (byte ip[]) { 
@@ -303,16 +310,42 @@ public class JokeClient {
 		String userName;
 		System.out.print("Enter your name please, (quit) to end: ");
 		System.out.flush();
+		
+		UUID uuid = UUID.randomUUID();
+		String lastJokeCode; // Code for last Joke that ran
+		String lastProverbCode;	// Code for last proverb that ran 
+		String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
+		String lastCode;	// Code for the last message that was ran
+		
+		// Initialize lastCode as empty for first run  
+		HttpCookie httpCookie = new HttpCookie(uuid.toString(), "");
+		
 		try {			
 			userName = in.readLine();
 			System.out.println("Welcome " + userName + "\n");
 			
 			do {
-				getRemoteAddress(serverName, serverName);
-		    	
-			    // Create cookie to send to server
-			    // HttpCookie httpCookie = jokeClient.getCookie();
-			    // onnectToAdminServer(serverName, httpCookie);
+				// getRemoteAddress(serverName, serverName);
+				// Create cookie to send to server
+		    	HttpCookie tempCookie = connectToAdmin(serverName, httpCookie);
+		    	// Update class statement values 
+		    	if (tempCookie != null) {
+		    		String value = tempCookie.getValue();
+		    		if(!value.isEmpty()) {
+		    			// Last statement ran was a joke
+		    			if(value.charAt(0) == 'J') {
+		    				lastMode = "JOKE";
+		    				lastJokeCode = value;
+		    			}
+		    			
+		    			// Last statement ran was a proverb
+		    			else if(value.charAt(0) == 'P') {
+		    				lastMode = "PROVERB";
+		    				lastProverbCode = value;
+		    			}
+		    		}
+		    	}
+
 			    
 				if (userName.indexOf("quit") < 0)
 					getRemoteAddress(userName, serverName);
