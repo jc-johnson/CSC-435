@@ -76,9 +76,9 @@ public class JokeClient {
 	
 	private static UUID uuid; // Unique id to store record of last received message
 	
-	private String lastJokeCode; // Code for last Joke that ran
-	private String lastProverbCode;	// Code for last proverb that ran 
-	private String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
+	private static String lastJokeCode; // Code for last Joke that ran
+	private static String lastProverbCode;	// Code for last proverb that ran 
+	private static String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
 	private static String lastCode;	// Code for the last message that was ran
 	
 	private HttpCookie httpCookie;
@@ -89,8 +89,59 @@ public class JokeClient {
 		this.httpCookie = new HttpCookie(uuid.toString(), lastCode);
 	}
 	
-	private static HttpCookie connectToAdmin(String serverName, HttpCookie httpCookie) {
+	//Connect to Admin Server and send a cookie. Get updated cookie back and return. 
+	// Updated cookie has last run joke/proverb. 
+	private static HttpCookie connectToAdmin(String serverName, int portNumber, HttpCookie httpCookie) {
+		Socket socket;
+		BufferedReader fromServer;
+		PrintStream toServer;
+		String textFromServer;
 		
+		// I/O objects for sending/receiving objects 
+		ObjectOutputStream objectOutputStream;
+        ObjectInputStream objectInputStream;
+
+		try{
+			// Open connection to server port
+			socket = new Socket(serverName, portNumber);
+
+			// Create filter I/O streams for the socket:
+			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			toServer = new PrintStream(socket.getOutputStream());
+			textFromServer = fromServer.readLine();
+			
+			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+			objectInputStream = new ObjectInputStream(socket.getInputStream());
+			
+			// Get updated cookie object from server
+			HttpCookie inputHttpCookie = (HttpCookie) objectInputStream.readObject();
+			if (inputHttpCookie == null) {
+				throw new NullPointerException("Cookie received from the server is null.");
+			}
+			String cookieName = inputHttpCookie.getName();
+			String cookieValue = inputHttpCookie.getValue();
+			System.out.println("Cookie Name: " + cookieName);
+			System.out.println("Cookie Value: " + cookieValue);
+			
+			// Read all responses from server
+			long length = 0;
+			while ((textFromServer != null)) {
+				if (textFromServer.isEmpty()) {
+			        break;
+			    }
+				textFromServer = fromServer.readLine();
+				System.out.println(textFromServer);
+		        length += textFromServer.length();
+			}
+			updateData(inputHttpCookie);
+			socket.close();
+			} catch (IOException x) {
+			System.out.println ("Socket error.");
+			x.printStackTrace ();
+		} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 		return null;
 	}
@@ -184,9 +235,7 @@ public class JokeClient {
 			x.printStackTrace();
 		}
 	}
-	
-	
-	
+
 	// Gets next phrase from a server
 	private static void getNextPhrase(String serverName) {
 		// Connect to Joke Server 
@@ -296,6 +345,29 @@ public class JokeClient {
 		return result.toString();
 	}	
 	
+	// Updating class data with info from server via cookie
+	private static void updateData(HttpCookie httpCookie) {
+		if (httpCookie == null) {
+			throw new NullPointerException("Cookie parameter is null.");
+		}
+		
+		// Update class statement values 
+		else if (httpCookie != null) {
+    		String value = httpCookie.getValue();
+    		if(!value.isEmpty()) {
+    			// Last statement ran was a joke
+    			if(value.charAt(0) == 'J') {
+    				lastMode = "JOKE";
+    				lastJokeCode = value;
+    			}
+    			// Last statement ran was a proverb
+    			else if(value.charAt(0) == 'P') {
+    				lastMode = "PROVERB";
+    				lastProverbCode = value;
+    			}
+    		}
+    	}
+	}
 	// Main job is to try to connect to an admin server 
 	public static void main(String args[]) {
 			
@@ -326,8 +398,8 @@ public class JokeClient {
 			
 			do {
 				// getRemoteAddress(serverName, serverName);
-				// Create cookie to send to server
-		    	HttpCookie tempCookie = connectToAdmin(serverName, httpCookie);
+				// Create cookie to send to admin server
+		    	HttpCookie tempCookie = connectToAdmin(serverName, 4546, httpCookie);
 		    	// Update class statement values 
 		    	if (tempCookie != null) {
 		    		String value = tempCookie.getValue();
