@@ -303,28 +303,24 @@ public class JokeClient {
 		String userName;
 		System.out.print("Enter your name please, (quit) to end: ");
 		System.out.flush();
-		try {
+		try {			
 			userName = in.readLine();
 			System.out.println("Welcome " + userName + "\n");
-			if (userName.indexOf("quit") < 0) {
-				 getRemoteAddress(userName, serverName);
-				JokeClient jokeClient = new JokeClient();
 			
-				// Connect to Joke Server 
-				while(true) {
-		    	// getRemoteAddress(serverName, serverName);
+			do {
+				getRemoteAddress(serverName, serverName);
 		    	
-		    	// Create cookie to send to server
-		    	HttpCookie httpCookie = jokeClient.getCookie();
-		    	connectToAdminServer(serverName, httpCookie);
-				}
-				
-				// User enters 'quit'			
-			}	else if (userName.indexOf("quit") < 0) {
-				System.out.println ("Cancelled by user request.");
-			}			
+			    // Create cookie to send to server
+			    // HttpCookie httpCookie = jokeClient.getCookie();
+			    // onnectToAdminServer(serverName, httpCookie);
+			    
+				if (userName.indexOf("quit") < 0)
+					getRemoteAddress(userName, serverName);
+			// user has not entered 'quit'
+			} while (userName.indexOf("quit") < 0); 
+				 System.out.println ("Cancelled by user request.");
+		
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 	    	
 	    }
