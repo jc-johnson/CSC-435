@@ -196,8 +196,13 @@ public class JokeClientAdmin extends Thread {
 	// Main logic in class 
 	public void run(){
 		
-		String state = getServerState();
+		// Some instances of JokeClientAdmin are just worker classes and aren't initialized with a server 
+		if (jokeServer != null) {
+			String state = getServerState();
+		}
 		
+		
+		/* 
 		while (true) {
 			
 			for (int i = 1; i <= 4; i++) {
@@ -220,7 +225,8 @@ public class JokeClientAdmin extends Thread {
 					printAllProverbs();
 				}
 			}
-		}		
+		}
+		*/		
 	}
 	 
 	// Convert byte to string 
@@ -231,5 +237,39 @@ public class JokeClientAdmin extends Thread {
 			result.append((0xff &ip[i]));
 		}
 		return result.toString();
+	}
+	
+	public static void main(String[] args) {
+		int queuelength = 6; 
+		int port = 4546;
+		String ServerName = "JokeClientAdmin";
+		Socket socket;		
+		
+		ServerSocket serverSocket;
+		
+		ObjectOutputStream objectToServer; 
+	    ObjectInputStream objectFromServer;
+		
+		try {
+			serverSocket = new ServerSocket(port, queuelength);
+			
+			// Get server connection and pass socket to Worker to start
+			System.out.println
+				("Jordan Johnson's Joke Client Admin starting up, listening at port 4546.\n");
+			while (true) {
+				socket = serverSocket.accept(); // Accepts client connection  
+				
+				objectToServer = new ObjectOutputStream(socket.getOutputStream());
+			    objectFromServer = new ObjectInputStream(socket.getInputStream());
+			    
+			    HttpCookie cookie = (HttpCookie) objectFromServer.readObject();
+			    
+				new JokeClientAdmin(socket).start(); // Client admin class handles this thread's work -- alternative constructor  
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 }
