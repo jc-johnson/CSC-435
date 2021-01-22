@@ -70,6 +70,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap; 
 
+import main.JokeClientAdmin;
+
 public class JokeServer {
 	
 	private enum ServerState {
@@ -164,7 +166,7 @@ public class JokeServer {
 	}
 	
 	// Get joke code associated with a given joke string
-		public String getProverbCode(String jokeString) {
+	public String getProverbCode(String jokeString) {
 			Set<String> jokeKeys = jokeSymbols.keySet();
 			
 			for (String key : jokeKeys) {
@@ -202,7 +204,6 @@ public class JokeServer {
 			System.out.println(
 					"Proverb " + entry.getValue() + ": \n " + entry.getValue());
 	}
-	
 	
 	private void toggleServerState() {
 		if (state != null) {
