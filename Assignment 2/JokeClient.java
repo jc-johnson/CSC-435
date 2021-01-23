@@ -112,7 +112,7 @@ public class JokeClient {
 			
 			// Create I/O streams to read data to/from the socket
 			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
-			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
+			toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
 			textFromServer = fromServer.readLine();
 			
 			objectToServer = new ObjectOutputStream(socket.getOutputStream());
