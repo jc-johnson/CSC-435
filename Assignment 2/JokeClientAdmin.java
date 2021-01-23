@@ -59,8 +59,6 @@ import java.net.*; // Get the Java networking libraries
 import java.util.Map;
 import java.util.Random;
 
-import main.JokeServer;
-
 // This class does the main work for all connecting threads 
 public class JokeClientAdmin extends Thread {
 	
@@ -210,11 +208,6 @@ public class JokeClientAdmin extends Thread {
 				String lastString = httpCookie.getValue();
 			}
 			
-			
-			
-			
-			
-		
 		// This is just a worker thread 
 		} else if (jokeServer == null) {
 			
@@ -280,6 +273,7 @@ public class JokeClientAdmin extends Thread {
 			while (true) {
 			
 				socket = serverSocket.accept(); // Accepts client connection  
+				System.out.println("Attempting to read cookie.");
 				
 				// objectToServer = new ObjectOutputStream(socket.getOutputStream());
 			    // objectFromServer = new ObjectInputStream(socket.getInputStream());
@@ -287,8 +281,8 @@ public class JokeClientAdmin extends Thread {
 			    // read in cookie from connection
 			    // httpCookie = (HttpCookie) objectFromServer.readObject();
 			    
-			    System.out.println("Http Cookie name: " + httpCookie.getName());
-			    System.out.println("Http Cookie value: " + httpCookie.getValue());
+			    // System.out.println("Http Cookie name: " + httpCookie.getName());
+			    // System.out.println("Http Cookie value: " + httpCookie.getValue());
 			    			    
 				new Worker(socket).start(); 	// Client admin class handles this thread's work using  alternative constructor.
 														// Connects to Joke Server and sends cookie 

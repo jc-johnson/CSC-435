@@ -70,8 +70,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap; 
 
-import main.JokeClientAdmin;
-
 public class JokeServer {
 	
 	private enum ServerState {
@@ -196,13 +194,13 @@ public class JokeServer {
 	public void printAllJokes() {
 		for(Map.Entry<Integer, String> entry : jokes.entrySet())
 			System.out.println(
-					"Joke " + entry.getValue() + ": \n " + entry.getValue());
+					"Joke: " + entry.getValue() + ": \n " + entry.getValue());
 	}
 	
 	public void printAllProverbs() {
 		for(Map.Entry<Integer, String> entry : proverbs.entrySet())
 			System.out.println(
-					"Proverb " + entry.getValue() + ": \n " + entry.getValue());
+					"Proverb: " + entry.getValue() + ": \n " + entry.getValue());
 	}
 	
 	private void toggleServerState() {
@@ -219,8 +217,8 @@ public class JokeServer {
 
 	public static void main(String[] args) {
 		int queuelength = 6; 
-		int port = 4545;
-		String ServerName = "localhost";
+		int port = 4545;	// Port for client 
+		String serverName = "localhost";
 		Socket socket;		
 		JokeServer jokeServer = new JokeServer();
 		
@@ -234,10 +232,19 @@ public class JokeServer {
 				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
 			while (true) {
 				socket = serversocket.accept(); // Accepts client connection
-				System.out.println(jokeServer.getState()); // return server state
-				// new JokeClientAdmin(socket).start(); // Create worker class to handle new connection   
-				new JokeClientAdmin(jokeServer, socket).start(); // Client admin class handles this thread's work 
-				jokeServer.toggleServerState(); // toggle state after each connection
+				String serverState =  jokeServer.getState(); 
+				System.out.println("Server state: " + serverState + "\n"); // return server state
+				
+				// Decide whether to print joke or proverb string
+				if (serverState.equals(ServerState.JOKE.toString())) {
+					jokeServer.printAllJokes();
+				} else if (serverState.equals(ServerState.PROVERB.toString())) {
+					jokeServer.printAllProverbs();
+				}
+				
+				new Worker(socket).start();
+				
+				// jokeServer.toggleServerState(); // toggle state after each connection
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

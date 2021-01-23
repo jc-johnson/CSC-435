@@ -24,7 +24,7 @@ public class JokeServer2 {
 		    while (true) {
 		      // wait for the next client connection:
 		      sock = servsock.accept();
-		      new Worker (sock).start();
+		      new AdminWorker (sock).start();
 		    }
 		} catch (IOException e) {
 			e.printStackTrace();

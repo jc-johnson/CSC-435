@@ -81,6 +81,8 @@ public class JokeClient {
 	private static String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
 	private static String lastCode;	// Code for the last message that was ran
 	
+	private static String userName; // Name of user using client 
+	
 	private HttpCookie httpCookie;
 	
 	public JokeClient() {
@@ -375,7 +377,7 @@ public class JokeClient {
 		if (args.length < 1) serverName = "localhost";
 		else serverName = args[0];
 		System.out.println("Jordan Johnson's Joker Client\n");
-		System.out.println("Using server: " + serverName + ", Port: 4546");
+		System.out.println("Using server: " + serverName + ", Port: " + serverPort);
 		
 		// Get user input
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -399,7 +401,7 @@ public class JokeClient {
 			do {
 				// getRemoteAddress(serverName, serverName);
 				// Create cookie to send to admin server
-		    	HttpCookie tempCookie = connectToAdmin(serverName, 4546, httpCookie);
+		    	HttpCookie tempCookie = connectToAdmin(serverName, serverPort, httpCookie);
 		    	// Update class statement values 
 		    	if (tempCookie != null) {
 		    		String value = tempCookie.getValue();

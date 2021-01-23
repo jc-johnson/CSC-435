@@ -3,38 +3,45 @@ package main;
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
 
-
 public class Worker extends Thread {
 	Socket socket; // Main class for creating a server connection
 	HttpCookie httpCookie;
 	
-	public Worker (Socket s) {
-		socket = s;
-		
+	String printString;
+	
+	public Worker (Socket socket) {
+		socket = socket;
 	}
 	
-	public Worker(Socket s, HttpCookie httpCookie) {
-		socket = s;
+	public Worker(Socket socket, HttpCookie httpCookie) {
+		this.socket = socket;
 		this.httpCookie = httpCookie;
 	}
-
+	
+	// Includes the next string that should be printed to output 
+	public Worker(Socket socket, String string) {
+		this.socket = socket;
+		this.printString = string;
+	}
+	
+	public Worker(Socket socket, JokeServer jokeServer, HttpCookie httpCookie) {
+		this.socket = socket;
+		this.httpCookie = httpCookie;
+	}
 	 
 	public void run() {
 		 // Get I/O streams in/out from the socket - let's you read data in and out and print 
 		 PrintStream out = null;
 		 BufferedReader in = null;
+		 ObjectOutputStream objectOut; 
+		 ObjectInputStream objectIn;
+		 
 		 try {
-			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));	// Reading data in from socket
+			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));		// Reading data in from socket
 			 out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
-			 try {
-				 String name;
-				 name = in.readLine();
-				 System.out.println("Looking up " + name);
-				 printRemoteAddress(name, out);	// Simply print server address to out stream 
-			 } catch (IOException x) {
-				 System.out.println("Server read error");
-				 x.printStackTrace();
-			 }
+			 objectOut = new ObjectOutputStream(socket.getOutputStream());					// Send object out
+			 objectIn = new ObjectInputStream(socket.getInputStream());						// Read object in 
+			 
 			 socket.close(); // close this connection, but not the server
 		 } catch (IOException ioe) {
 			 System.out.println(ioe);		 
