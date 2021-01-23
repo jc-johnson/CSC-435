@@ -28,7 +28,8 @@ public class Worker extends Thread {
 		this.socket = socket;
 		this.httpCookie = httpCookie;
 	}
-	 
+	
+	// main function	
 	public void run() {
 		 // Get I/O streams in/out from the socket - let's you read data in and out and print 
 		 PrintStream out = null;
