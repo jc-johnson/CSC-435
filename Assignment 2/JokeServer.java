@@ -56,8 +56,11 @@ is made.
 
 package main;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.PrintStream;
+import java.net.HttpCookie;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -87,7 +90,7 @@ public class JokeServer {
 	    put(4, "What do you call two birds in love? \n \t Tweethearts.");
 	}};
 	
-	private NavigableMap<String, String> jokeSymbols = new TreeMap<>() {{
+	private static NavigableMap<String, String> jokeSymbols = new TreeMap<>() {{
 	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
 	    put("JB", "What's brown and sticky? \n \t A stick.");
 	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
@@ -101,7 +104,7 @@ public class JokeServer {
 	    put(4, "A stitch in time saves nine.");
 	}};
 	
-	private NavigableMap<String, String> proverbSymbols = new TreeMap<>() {{
+	private static NavigableMap<String, String> proverbSymbols = new TreeMap<>() {{
 	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
 	    put("JB", "What's brown and sticky? \n \t A stick.");
 	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
@@ -147,7 +150,28 @@ public class JokeServer {
 	
 	public String getNextJoke(String index) {
 		Map.Entry<String, String> next = jokeSymbols.higherEntry(index);
+		
+		// Return the first Joke if current string is the last joke 
+		if (next == null) {
+			next = jokeSymbols.firstEntry();
+			return next.getValue();	
+		}
+		
 		return next.getValue();
+	}
+	
+	// Returns the code of the next joke in the series 
+	public String getNextJokeCode(String index) {
+		
+		Map.Entry<String, String> next = jokeSymbols.higherEntry(index);
+		
+		// Return the first Joke if current string is the last joke 
+		if (next == null) {
+			next = jokeSymbols.firstEntry();
+			return next.getKey();	
+		}
+		
+		return next.getKey();
 	}
 	
 	public String getPreviousJoke(String index) {
@@ -179,7 +203,27 @@ public class JokeServer {
 	
 	public String getNextProverb(String index) {
 		Map.Entry<String, String> next = proverbSymbols.higherEntry(index);
+		
+		// Return the first Joke if current string is the last joke 
+		if (next == null) {
+			next = proverbSymbols.firstEntry();
+			return next.getValue();	
+		}
+				
 		return next.getValue();
+	}
+	
+	// returns next proverb code in the proverb sequence 
+	public String getNextProverbCode(String index) {
+		Map.Entry<String, String> next = proverbSymbols.higherEntry(index);
+		
+		// Return the first Joke if current string is the last joke 
+		if (next == null) {
+			next = proverbSymbols.firstEntry();
+			return next.getKey();	
+		}
+						
+		return next.getKey();
 	}
 	
 	public String getPreviousProverb(String index) {
@@ -235,18 +279,68 @@ public class JokeServer {
 				String serverState =  jokeServer.getState(); 
 				System.out.println("Server state: " + serverState + "\n"); // return server state
 				
-				// Decide whether to print joke or proverb string
-				if (serverState.equals(ServerState.JOKE.toString())) {
-					jokeServer.printAllJokes();
-				} else if (serverState.equals(ServerState.PROVERB.toString())) {
-					jokeServer.printAllProverbs();
+				// Read in cookie from client
+				ObjectInputStream objectIn;
+				objectIn = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+				
+				HttpCookie cookie = (HttpCookie) objectIn.readObject();
+				
+				if (cookie == null ) {
+					throw new NullPointerException("Cookie read from Client is null.");
 				}
 				
-				new Worker(socket).start();
-				
+				// Decide whether to print joke or proverb string
+				if (serverState.equals(ServerState.JOKE.toString())) {
+					 
+					// get next joke according to uuid in cookie 
+					String uuid = cookie.getName();
+					String currentString = cookie.getValue();
+					
+					// get next joke and print to out stream 
+					String currentJoke = jokeSymbols.get(currentString);
+					String nextJoke = jokeServer.getNextJoke(currentJoke);
+					
+					// print currentJoke to output
+					
+					// update cookie object
+					cookie.setValue(nextJoke);
+					
+					// pass cookie object to Worker constructor to print out & pass back cookie 
+					
+					new Worker(socket).start();
+					
+					// jokeServer.printAllJokes();
+					
+					
+					// jokeServer.toggleServerState(); // toggle state after each connection
+					
+				} else if (serverState.equals(ServerState.PROVERB.toString())) {
+					
+					// get next proverb according to uuid in cookie 
+					String uuid = cookie.getName();
+					String currentString = cookie.getValue();
+					
+					// get next joke and print to out stream 
+					String currentProverb = jokeSymbols.get(currentString);
+					String nextProverb = jokeServer.getNextProverb(currentProverb);
+					
+					// print currentProverb to output
+					
+					// update cookie object
+					cookie.setValue(nextProverb);
+					
+					// jokeServer.printAllProverbs();
+					
+					
+					new Worker(socket).start();
+				}
+			
 				// jokeServer.toggleServerState(); // toggle state after each connection
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

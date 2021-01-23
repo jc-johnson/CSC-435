@@ -19,7 +19,8 @@ public class AdminLooper implements Runnable {
 	    	while (adminControlSwitch) {
 	    		// wait for the next ADMIN client connection:
 	    		sock = servsock.accept();
-	    		new AdminWorker (sock).start(); 
+	    		new AdminWorker (sock).start();
+	    		servsock.close();
 	    	}
 	    }catch (IOException ioe) {
 	    	System.out.println(ioe);

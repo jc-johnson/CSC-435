@@ -10,7 +10,7 @@ public class Worker extends Thread {
 	String printString;
 	
 	public Worker (Socket socket) {
-		socket = socket;
+		this.socket = socket;
 	}
 	
 	public Worker(Socket socket, HttpCookie httpCookie) {
@@ -40,8 +40,8 @@ public class Worker extends Thread {
 		 try {
 			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));		// Reading data in from socket
 			 out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
-			 objectOut = new ObjectOutputStream(socket.getOutputStream());					// Send object out
-			 objectIn = new ObjectInputStream(socket.getInputStream());						// Read object in 
+			 objectOut = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));					// Send object out
+			 objectIn = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));						// Read object in 
 			 
 			 if(!this.printString.isEmpty()) {
 				 out.print("Print String: \n" + printString );

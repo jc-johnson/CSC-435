@@ -12,7 +12,7 @@ public class AdminWorker extends Thread {
 	
 	Socket socket; 
 	public AdminWorker (Socket socket) {
-		socket = socket;
+		this.socket = socket;
 	} 
 	
 	public void run(){

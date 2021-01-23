@@ -56,6 +56,8 @@ is made.
 
 package main;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -115,11 +117,15 @@ public class JokeClient {
 			toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
 			textFromServer = fromServer.readLine();
 			
-			objectToServer = new ObjectOutputStream(socket.getOutputStream());
-		    objectFromServer = new ObjectInputStream(socket.getInputStream());
+			objectToServer = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		    objectFromServer = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		    
-		    if(this.httpCookie == null)
+		    if (this.httpCookie == null) {
+		    	socket.close();
 		    	throw new NullPointerException("Client httpCookie is null.");
+		    	
+		    }
+		    	
 		    		    
 		    // Write object cookie to server
 		    objectToServer.writeObject(httpCookie);
@@ -128,14 +134,17 @@ public class JokeClient {
 			toServer.flush();
 			
 			// Get updated cookie object from server
-			HttpCookie inputHttpCookie = (HttpCookie) objectFromServer.readObject();
-			if (inputHttpCookie == null) {
+			HttpCookie newCookie = (HttpCookie) objectFromServer.readObject();
+			if (newCookie == null) {
+				socket.close();
 				throw new NullPointerException("Cookie received from the server is null.");
 			}
-			String cookieName = inputHttpCookie.getName();
-			String cookieValue = inputHttpCookie.getValue();
+			String cookieName = newCookie.getName();
+			String cookieValue = newCookie.getValue();
 			System.out.println("Cookie Name: " + cookieName);
 			System.out.println("Cookie Value: " + cookieValue);
+
+			updateData(newCookie);
 			
 			// Read all responses from server
 			long length = 0;
@@ -232,6 +241,7 @@ public class JokeClient {
 			// Get code of last printed string
 			String code = cookie.getValue();
 			if(code.isEmpty()) {
+				socket.close();
 				throw new IllegalArgumentException("Empty code in cookie value");
 			}
 			
