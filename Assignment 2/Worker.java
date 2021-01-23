@@ -29,19 +29,25 @@ public class Worker extends Thread {
 		this.httpCookie = httpCookie;
 	}
 	
-	// main function	
+	// The main work to be completed with this socket connection
 	public void run() {
 		 // Get I/O streams in/out from the socket - let's you read data in and out and print 
 		 PrintStream out = null;
 		 BufferedReader in = null;
 		 ObjectOutputStream objectOut; 
 		 ObjectInputStream objectIn;
-		 
+		 		 
 		 try {
 			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));		// Reading data in from socket
 			 out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
 			 objectOut = new ObjectOutputStream(socket.getOutputStream());					// Send object out
 			 objectIn = new ObjectInputStream(socket.getInputStream());						// Read object in 
+			 
+			 if(!this.printString.isEmpty()) {
+				 out.print("Print String: \n" + printString );
+			 } else {
+				 out.print("Print String is empty");
+			 }
 			 
 			 socket.close(); // close this connection, but not the server
 		 } catch (IOException ioe) {

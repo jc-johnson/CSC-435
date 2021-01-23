@@ -70,53 +70,65 @@ import java.util.stream.Collectors;
 
 public class JokeClient {
 	
+	private enum JokeCodes {
+		JA, JB, JC, JD
+	}
+	
+	private enum ProverbCodes {
+		PA, PB, PC, PD
+	}
+	
 	private static int serverPort = 4545;
 	private static int adminServerPort = 4546;
 	private static String serverName = "localhost" ; 
 	
-	private static UUID uuid; // Unique id to store record of last received message
+	private String lastJokeCode; // Code for last Joke that ran
+	private String lastProverbCode;	// Code for last proverb that ran 
+	private String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
+	private String lastCode;	// Code for the last message that was ran
 	
-	private static String lastJokeCode; // Code for last Joke that ran
-	private static String lastProverbCode;	// Code for last proverb that ran 
-	private static String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
-	private static String lastCode;	// Code for the last message that was ran
-	
-	private static String userName; // Name of user using client 
-	
+	private UUID uuid; // Unique id to store record of last received message
+	private String currentCode;
 	private HttpCookie httpCookie;
 	
 	public JokeClient() {
 		this.uuid=UUID.randomUUID(); //Generates random UUID
-		this.lastCode="";
-		this.httpCookie = new HttpCookie(uuid.toString(), lastCode);
+		this.currentCode = JokeCodes.JA.toString();	// Start each client to receive the first joke
+		this.httpCookie = new HttpCookie(uuid.toString(), currentCode);
 	}
 	
-	//Connect to Admin Server and send a cookie. Get updated cookie back and return. 
-	// Updated cookie has last run joke/proverb. 
-	private static HttpCookie connectToAdmin(String serverName, int portNumber, HttpCookie httpCookie) {
-		Socket socket;
+	private void connectToServer(String serverName, int serverPort) {
+		Socket socket; // the main class we will use to create a server connection
 		BufferedReader fromServer;
 		PrintStream toServer;
 		String textFromServer;
+		// For sending and receiving objects via a socket
+		ObjectOutputStream objectToServer; 
+	    ObjectInputStream objectFromServer;
 		
-		// I/O objects for sending/receiving objects 
-		ObjectOutputStream objectOutputStream;
-        ObjectInputStream objectInputStream;
-
-		try{
-			// Open connection to server port
-			socket = new Socket(serverName, portNumber);
-
-			// Create filter I/O streams for the socket:
-			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			toServer = new PrintStream(socket.getOutputStream());
+		try {
+			// Trying to connect to admin server
+			socket = new Socket(serverName, serverPort);
+			
+			// Create I/O streams to read data to/from the socket
+			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
+			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
 			textFromServer = fromServer.readLine();
 			
-			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-			objectInputStream = new ObjectInputStream(socket.getInputStream());
+			objectToServer = new ObjectOutputStream(socket.getOutputStream());
+		    objectFromServer = new ObjectInputStream(socket.getInputStream());
+		    
+		    if(this.httpCookie == null)
+		    	throw new NullPointerException("Client httpCookie is null.");
+		    		    
+		    // Write object cookie to server
+		    objectToServer.writeObject(httpCookie);
+		    
+			toServer.println("Connected to " + serverName + "."); 
+			toServer.flush();
 			
 			// Get updated cookie object from server
-			HttpCookie inputHttpCookie = (HttpCookie) objectInputStream.readObject();
+			HttpCookie inputHttpCookie = (HttpCookie) objectFromServer.readObject();
 			if (inputHttpCookie == null) {
 				throw new NullPointerException("Cookie received from the server is null.");
 			}
@@ -135,109 +147,17 @@ public class JokeClient {
 				System.out.println(textFromServer);
 		        length += textFromServer.length();
 			}
-			updateData(inputHttpCookie);
-			socket.close();
-			} catch (IOException x) {
-			System.out.println ("Socket error.");
-			x.printStackTrace ();
+			socket.close();	//Close socket 
+			
+		} catch (IOException x){
+			System.out.println("Socket error.");
+			x.printStackTrace();
 		} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		return null;
-	}
-	
-	private static void connectToAdminServer(String serverName) {
-		Socket socket; // the main class we will use to create a server connection
-		BufferedReader fromServer;
-		PrintStream toServer;
-		String textFromServer;
-		// For sending and receiving objects via a socket
-		ObjectOutputStream objectToServer; 
-	    ObjectInputStream objectFromServer;
-		
-		try {
-			/* Open connection to given server port */
-			socket = new Socket(serverName, adminServerPort);
-			
-			// Create I/O streams to read data to/from the socket
-			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
-			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
-			textFromServer = fromServer.readLine();
-			
-			objectToServer = new ObjectOutputStream(socket.getOutputStream());
-		    objectFromServer = new ObjectInputStream(socket.getInputStream());
-		    HttpCookie httpCookie = new HttpCookie(uuid.toString(), lastCode);
-		    
-		    // Write object to server
-		    objectToServer.writeObject(httpCookie);
-			toServer.println("Connected to " + serverName + "."); 
-			toServer.flush();
-			
-			// Read all responses from server
-			long length = 0;
-			while ((textFromServer != null)) {
-				if (textFromServer.isEmpty()) {
-			        break;
-			    }
-				textFromServer = fromServer.readLine();
-				System.out.println(textFromServer);
-		        length += textFromServer.length();
-			}
-			socket.close();	//Close socket 
-			
-		} catch (IOException x){
-			System.out.println("Socket error.");
-			x.printStackTrace();
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
-	private static void connectToAdminServer(String serverName, HttpCookie httpCookie) {
-		Socket socket; // the main class we will use to create a server connection
-		BufferedReader fromServer;
-		PrintStream toServer;
-		String textFromServer;
-		// For sending and receiving objects via a socket
-		ObjectOutputStream objectToServer; 
-	    ObjectInputStream objectFromServer;
-		
-		try {
-			// Trying to connect to admin server
-			socket = new Socket(serverName, adminServerPort);
-			
-			// Create I/O streams to read data to/from the socket
-			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
-			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
-			textFromServer = fromServer.readLine();
-			
-			objectToServer = new ObjectOutputStream(socket.getOutputStream());
-		    objectFromServer = new ObjectInputStream(socket.getInputStream());
-		    
-		    // Write object cookie to server
-		    objectToServer.writeObject(httpCookie);
-		    
-			toServer.println("Connected to " + serverName + "."); 
-			toServer.flush();
-			
-			// Read all responses from server
-			long length = 0;
-			while ((textFromServer != null)) {
-				if (textFromServer.isEmpty()) {
-			        break;
-			    }
-				textFromServer = fromServer.readLine();
-				System.out.println(textFromServer);
-		        length += textFromServer.length();
-			}
-			socket.close();	//Close socket 
-			
-		} catch (IOException x){
-			System.out.println("Socket error.");
-			x.printStackTrace();
-		}
-	}
-
 	// Gets next phrase from a server
 	private static void getNextPhrase(String serverName) {
 		// Connect to Joke Server 
@@ -348,82 +268,70 @@ public class JokeClient {
 	}	
 	
 	// Updating class data with info from server via cookie
-	private static void updateData(HttpCookie httpCookie) {
+	private void updateData(HttpCookie httpCookie) {
 		if (httpCookie == null) {
 			throw new NullPointerException("Cookie parameter is null.");
 		}
 		
 		// Update class statement values 
 		else if (httpCookie != null) {
-    		String value = httpCookie.getValue();
-    		if(!value.isEmpty()) {
-    			// Last statement ran was a joke
-    			if(value.charAt(0) == 'J') {
-    				lastMode = "JOKE";
-    				lastJokeCode = value;
-    			}
-    			// Last statement ran was a proverb
-    			else if(value.charAt(0) == 'P') {
-    				lastMode = "PROVERB";
-    				lastProverbCode = value;
-    			}
-    		}
+			String Key = httpCookie.getName(); 
+			
+			// Make sure we are getting the right cookie for the right uuid
+			if(Key.equals(this.uuid.toString())) {
+				
+	    		String value = httpCookie.getValue();
+	    		if(!value.isEmpty()) {
+	    			// Last statement ran was a joke
+	    			if(value.charAt(0) == 'J') {
+	    				lastMode = "JOKE";
+	    				lastJokeCode = value;
+	    			}
+	    			// Last statement ran was a proverb
+	    			else if(value.charAt(0) == 'P') {
+	    				lastMode = "PROVERB";
+	    				lastProverbCode = value;
+	    			}
+	    		} else {
+	    			System.out.println("Cookie value is empty.");
+	    			throw new IllegalArgumentException("Cookie value is empty.");
+	    		}
+			} else {
+				System.out.println("Cookie contains the wrong UUID.");
+				throw new IllegalArgumentException("Cookie contains the wrong UUID.");
+			}
     	}
 	}
 	// Main job is to try to connect to an admin server 
 	public static void main(String args[]) {
 			
 		String serverName;
-		if (args.length < 1) serverName = "localhost";
-		else serverName = args[0];
+		if (args.length < 1) serverName = "localhost";	// Connect to localhost by default
+		else serverName = args[0];						// Else connect to the server name the user entered as an argument 
 		System.out.println("Jordan Johnson's Joker Client\n");
 		System.out.println("Using server: " + serverName + ", Port: " + serverPort);
 		
-		// Get user input
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		String userName;
-		System.out.print("Enter your name please, (quit) to end: ");
-		System.out.flush();
-		
-		UUID uuid = UUID.randomUUID();
+		UUID uuid = UUID.randomUUID();	// Create uuid for client cookie 
 		String lastJokeCode; // Code for last Joke that ran
 		String lastProverbCode;	// Code for last proverb that ran 
 		String lastMode;	// Code for server mode while last message ran - was the last message a joke or a proverb? 
 		String lastCode;	// Code for the last message that was ran
 		
-		// Initialize lastCode as empty for first run  
-		HttpCookie httpCookie = new HttpCookie(uuid.toString(), "");
+		JokeClient jokeClient = new JokeClient();
 		
-		try {			
+		try {
+			// Get user name 
+			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+			String userName;
+			System.out.print("Enter your name please, (quit) to end: ");
+			System.out.flush();
 			userName = in.readLine();
 			System.out.println("Welcome " + userName + "\n");
 			
 			do {
-				// getRemoteAddress(serverName, serverName);
-				// Create cookie to send to admin server
-		    	HttpCookie tempCookie = connectToAdmin(serverName, serverPort, httpCookie);
-		    	// Update class statement values 
-		    	if (tempCookie != null) {
-		    		String value = tempCookie.getValue();
-		    		if(!value.isEmpty()) {
-		    			// Last statement ran was a joke
-		    			if(value.charAt(0) == 'J') {
-		    				lastMode = "JOKE";
-		    				lastJokeCode = value;
-		    			}
-		    			
-		    			// Last statement ran was a proverb
-		    			else if(value.charAt(0) == 'P') {
-		    				lastMode = "PROVERB";
-		    				lastProverbCode = value;
-		    			}
-		    		}
-		    	}
-
-			    
 				if (userName.indexOf("quit") < 0)
-					getRemoteAddress(userName, serverName);
-			// user has not entered 'quit'
+					jokeClient.connectToServer(serverName, serverPort);
+			// user has entered 'quit'
 			} while (userName.indexOf("quit") < 0); 
 				 System.out.println ("Cancelled by user request.");
 		
