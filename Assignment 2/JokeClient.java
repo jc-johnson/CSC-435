@@ -63,9 +63,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.HttpCookie;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -100,40 +103,50 @@ public class JokeClient {
 	}
 	
 	private void connectToServer(String serverName, int serverPort) {
-		Socket socket; // the main class we will use to create a server connection
-		BufferedReader fromServer;
-		PrintStream toServer;
-		String textFromServer;
+		// 
+		// String textFromServer;
 		// For sending and receiving objects via a socket
-		ObjectOutputStream objectToServer; 
-	    ObjectInputStream objectFromServer;
+		// ObjectOutputStream objectToServer; 
+	    // ObjectInputStream objectFromServer;
 		
 		try {
-			// Trying to connect to admin server
-			socket = new Socket(serverName, serverPort);
+			Socket socket = new Socket(serverName, serverPort);
+			
+			OutputStream outputStream = socket.getOutputStream();
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+			
 			
 			// Create I/O streams to read data to/from the socket
-			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
-			toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
-			textFromServer = fromServer.readLine();
+
+			// toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
+			// textFromServer = fromServer.readLine();
 			
-			objectToServer = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		    objectFromServer = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+			// objectToServer = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		    // objectFromServer = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		    
 		    if (this.httpCookie == null) {
 		    	socket.close();
 		    	throw new NullPointerException("Client httpCookie is null.");
 		    	
 		    }
-		    	
-		    		    
-		    // Write object cookie to server
-		    objectToServer.writeObject(httpCookie);
 		    
-			toServer.println("Connected to " + serverName + "."); 
-			toServer.flush();
+		    // Output client cookie
+		    List<HttpCookie> cookies = new ArrayList<>();
+		    cookies.add(this.httpCookie);
+		    System.out.println("Sending cookies to server.");
+		    objectOutputStream.writeObject(cookies);
+		     
+			
+			// PrintStream toServer = toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
+			
+		    // Write object cookie to server
+		    // objectToServer.writeObject(httpCookie);
+		    
+			// toServer.println("Connected to " + serverName + "."); 
+			// toServer.flush();
 			
 			// Get updated cookie object from server
+		    /*
 			HttpCookie newCookie = (HttpCookie) objectFromServer.readObject();
 			if (newCookie == null) {
 				socket.close();
@@ -145,9 +158,12 @@ public class JokeClient {
 			System.out.println("Cookie Value: " + cookieValue);
 
 			updateData(newCookie);
-			
+			*/
+		    
 			// Read all responses from server
 			long length = 0;
+			BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server	
+			String textFromServer = fromServer.readLine();
 			while ((textFromServer != null)) {
 				if (textFromServer.isEmpty()) {
 			        break;
@@ -161,9 +177,6 @@ public class JokeClient {
 		} catch (IOException x){
 			System.out.println("Socket error.");
 			x.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 	

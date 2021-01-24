@@ -58,6 +58,7 @@ package main;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.PrintStream;
 import java.net.HttpCookie;
@@ -279,22 +280,27 @@ public class JokeServer {
 				String serverState =  jokeServer.getState(); 
 				System.out.println("Server state: " + serverState + "\n"); // return server state
 				
+				InputStream inputStream = socket.getInputStream();
+				ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+				
 				// Read in cookie from client
-				ObjectInputStream objectIn;
-				objectIn = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+				List<HttpCookie> cookies = (List<HttpCookie>) objectInputStream.readObject();
+				HttpCookie clientCookie = cookies.get(0);
 				
-				HttpCookie cookie = (HttpCookie) objectIn.readObject();
-				
-				if (cookie == null ) {
+				if (clientCookie == null ) {
 					throw new NullPointerException("Cookie read from Client is null.");
 				}
 				
+				System.out.println("Cookie Name: " + clientCookie.getName() + "\n"); 
+				System.out.println("Cookie Value: " + clientCookie.getValue() + "\n"); 
+				
+				/*
 				// Decide whether to print joke or proverb string
 				if (serverState.equals(ServerState.JOKE.toString())) {
 					 
 					// get next joke according to uuid in cookie 
-					String uuid = cookie.getName();
-					String currentString = cookie.getValue();
+					String uuid = clientCookie.getName();
+					String currentString = clientCookie.getValue();
 					
 					// get next joke and print to out stream 
 					String currentJoke = jokeSymbols.get(currentString);
@@ -303,7 +309,7 @@ public class JokeServer {
 					// print currentJoke to output
 					
 					// update cookie object
-					cookie.setValue(nextJoke);
+					clientCookie.setValue(nextJoke);
 					
 					// pass cookie object to Worker constructor to print out & pass back cookie 
 					
@@ -334,6 +340,7 @@ public class JokeServer {
 					
 					new Worker(socket).start();
 				}
+				*/
 			
 				// jokeServer.toggleServerState(); // toggle state after each connection
 			}
