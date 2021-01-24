@@ -320,11 +320,13 @@ public class JokeClient {
 			if(cookieValue.charAt(0) == 'J') {
 				lastMode = "JOKE";
 				lastJokeCode = cookieValue;
+				this.httpCookie.setValue(cookieValue);
 			}
 			// Last statement ran was a proverb
 			else if(cookieValue.charAt(0) == 'P') {
 				lastMode = "PROVERB";
 				lastProverbCode = cookieValue;
+				this.httpCookie.setValue(cookieValue);
 			} 
 		else {
 			System.out.println("Cookie contains the wrong UUID.");

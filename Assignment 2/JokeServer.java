@@ -278,80 +278,12 @@ public class JokeServer {
 			while (true) {
 				socket = serversocket.accept(); // Accepts client connection
 				String serverState =  jokeServer.getState(); 
-				System.out.println("Server state: " + serverState + "\n"); // return server state
+				System.out.println("Server state: " + serverState + "\n"); // return server state	
 				
-				InputStream inputStream = socket.getInputStream();
-				// ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-				ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-				
-				// Read in cookie from client
-				// List<HttpCookie> cookies = (List<HttpCookie>) objectInputStream.readObject();
-				// HttpCookie clientCookie = cookies.get(0);
-				
-				
-				if (clientCookie == null ) {
-					objectInputStream.close();
-					throw new NullPointerException("Cookie read from Client is null.");
-				}
-				
-				System.out.println("Cookie Name: " + clientCookie.getName() + "\n"); 
-				System.out.println("Cookie Value: " + clientCookie.getValue() + "\n"); 
-				
-				/*
-				
-				// Decide whether to print joke or proverb string
-				if (serverState.equals(ServerState.JOKE.toString())) {
-					 
-					// get next joke according to uuid in cookie 
-					String uuid = clientCookie.getName();
-					String currentString = clientCookie.getValue();
-					
-					// get next joke and print to out stream 
-					String currentJoke = jokeSymbols.get(currentString);
-					String nextJoke = jokeServer.getNextJoke(currentJoke);
-					
-					// print currentJoke to output
-					
-					// update cookie object
-					clientCookie.setValue(nextJoke);
-					
-					// pass cookie object to Worker constructor to print out & pass back cookie 
-					
-					new Worker(socket).start();
-					
-					// jokeServer.printAllJokes();
-					
-					
-					// jokeServer.toggleServerState(); // toggle state after each connection
-					
-				} else if (serverState.equals(ServerState.PROVERB.toString())) {
-					
-					// get next proverb according to uuid in cookie 
-					String uuid = cookie.getName();
-					String currentString = cookie.getValue();
-					
-					// get next joke and print to out stream 
-					String currentProverb = jokeSymbols.get(currentString);
-					String nextProverb = jokeServer.getNextProverb(currentProverb);
-					
-					// print currentProverb to output
-					
-					// update cookie object
-					cookie.setValue(nextProverb);
-					
-					// jokeServer.printAllProverbs();
-					
-					
-					new Worker(socket).start();
-				}
-				*/
-			
-				// jokeServer.toggleServerState(); // toggle state after each connection
+				new Worker(socket, jokeServer.getState()).start();
+				jokeServer.toggleServerState(); // toggle state after each connection
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
