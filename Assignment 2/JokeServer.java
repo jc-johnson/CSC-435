@@ -262,29 +262,37 @@ public class JokeServer {
 
 	public static void main(String[] args) {
 		int queuelength = 6; 
-		int port = 4545;	// Port for client 
-		String serverName = "localhost";
-		Socket socket;		
-		JokeServer jokeServer = new JokeServer();
+		int port = 4545;	 	
+		Socket socket;
 		
-		ServerSocket serversocket;
+		// JokeServer jokeServer = new JokeServer();
 		
+		// New thread that listens for admin connection on port 5050
+		AdminLooper AL = new AdminLooper(); 
+	    Thread t = new Thread(AL);
+	    t.start();  
+	    
+	    ServerSocket serverSocket;
 		try {
-			serversocket = new ServerSocket(port, queuelength);
-			
-			// Get server connection and pass socket to Worker to start
-			System.out.println
-				("Jordan Johnson's Joke server starting up, listening at port 4545.\n");
-			while (true) {
-				socket = serversocket.accept(); // Accepts client connection
-				String serverState =  jokeServer.getState(); 
-				System.out.println("Server state: " + serverState + "\n"); // return server state	
+			serverSocket = new ServerSocket(port, queuelength);
+			System.out.println("Jordan Johnson's Joke server starting up at port 4545.\n");
+		    while (true) {
+		      // wait for connection:
+		      socket = serverSocket.accept();
+		      
+		      /*
+			  String serverState =  jokeServer.getState(); 
+			  System.out.println("Server state: " + serverState + "\n"); // return server state	
 				
-				new Worker(socket, jokeServer.getState()).start();
-				jokeServer.toggleServerState(); // toggle state after each connection
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			  new Worker(socket, jokeServer.getState()).start();
+			  jokeServer.toggleServerState(); // toggle state after each connection
+		      */
+		      
+		      new Worker (socket).start();
+		    }
+		    
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 
