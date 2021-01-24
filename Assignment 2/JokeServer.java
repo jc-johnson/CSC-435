@@ -281,13 +281,16 @@ public class JokeServer {
 				System.out.println("Server state: " + serverState + "\n"); // return server state
 				
 				InputStream inputStream = socket.getInputStream();
+				// ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
 				ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 				
 				// Read in cookie from client
-				List<HttpCookie> cookies = (List<HttpCookie>) objectInputStream.readObject();
-				HttpCookie clientCookie = cookies.get(0);
+				// List<HttpCookie> cookies = (List<HttpCookie>) objectInputStream.readObject();
+				// HttpCookie clientCookie = cookies.get(0);
+				
 				
 				if (clientCookie == null ) {
+					objectInputStream.close();
 					throw new NullPointerException("Cookie read from Client is null.");
 				}
 				
@@ -295,6 +298,7 @@ public class JokeServer {
 				System.out.println("Cookie Value: " + clientCookie.getValue() + "\n"); 
 				
 				/*
+				
 				// Decide whether to print joke or proverb string
 				if (serverState.equals(ServerState.JOKE.toString())) {
 					 

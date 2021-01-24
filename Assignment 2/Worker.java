@@ -2,8 +2,29 @@ package main;
 
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+
+
 
 public class Worker extends Thread {
+	
+	private NavigableMap<String, String> jokeSymbols = new TreeMap<>() {{
+	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
+	    put("JB", "What's brown and sticky? \n \t A stick.");
+	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
+	    put("JD", "What do you call two birds in love? \n \t Tweethearts.");
+	}};
+
+	private NavigableMap<String, String> proverbSymbols = new TreeMap<>() {{
+	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
+	    put("JB", "What's brown and sticky? \n \t A stick.");
+	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
+	    put("JD", "What do you call two birds in love? \n \t Tweethearts.");
+	}};
+
 	Socket socket; // Main class for creating a server connection
 	HttpCookie httpCookie;
 	

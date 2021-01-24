@@ -103,72 +103,46 @@ public class JokeClient {
 	}
 	
 	private void connectToServer(String serverName, int serverPort) {
-		// 
-		// String textFromServer;
-		// For sending and receiving objects via a socket
-		// ObjectOutputStream objectToServer; 
-	    // ObjectInputStream objectFromServer;
+		Socket socket; // the main class we will use to create a server connection
+		BufferedReader fromServer;
+		PrintStream toServer;
+		String textFromServer;
 		
 		try {
-			Socket socket = new Socket(serverName, serverPort);
+			socket = new Socket(serverName, serverPort);
 			
-			OutputStream outputStream = socket.getOutputStream();
-			ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+			// Create input/output streams
+			fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server
+			toServer = new PrintStream(socket.getOutputStream());	// Print output to server 
+			textFromServer = fromServer.readLine();
 			
-			
-			// Create I/O streams to read data to/from the socket
-
-			// toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
-			// textFromServer = fromServer.readLine();
-			
-			// objectToServer = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		    // objectFromServer = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		    
-		    if (this.httpCookie == null) {
+			if (this.httpCookie == null) {
 		    	socket.close();
 		    	throw new NullPointerException("Client httpCookie is null.");
 		    	
 		    }
-		    
-		    // Output client cookie
-		    List<HttpCookie> cookies = new ArrayList<>();
-		    cookies.add(this.httpCookie);
-		    System.out.println("Sending cookies to server.");
-		    objectOutputStream.writeObject(cookies);
-		     
 			
-			// PrintStream toServer = toServer = new PrintStream(socket.getOutputStream());								// Print output to server 
+			// Get uuid for this machine and the current string that needs to be run for it 
+			String uuid = this.httpCookie.getName().toString();
+			String currentString = this.httpCookie.getValue();
 			
-		    // Write object cookie to server
-		    // objectToServer.writeObject(httpCookie);
-		    
-			// toServer.println("Connected to " + serverName + "."); 
-			// toServer.flush();
-			
-			// Get updated cookie object from server
-		    /*
-			HttpCookie newCookie = (HttpCookie) objectFromServer.readObject();
-			if (newCookie == null) {
-				socket.close();
-				throw new NullPointerException("Cookie received from the server is null.");
-			}
-			String cookieName = newCookie.getName();
-			String cookieValue = newCookie.getValue();
-			System.out.println("Cookie Name: " + cookieName);
-			System.out.println("Cookie Value: " + cookieValue);
+			// Concatenated String that represents a cookie to send to the server
+			// Made up of cookie name and value 
+			String cookieString = uuid + "&" + currentString;					
+			toServer.println(cookieString); 
+			toServer.flush();	// Actually send the string
 
-			updateData(newCookie);
-			*/
-		    
 			// Read all responses from server
 			long length = 0;
-			BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));	// Read input from server	
-			String textFromServer = fromServer.readLine();
 			while ((textFromServer != null)) {
 				if (textFromServer.isEmpty()) {
 			        break;
 			    }
 				textFromServer = fromServer.readLine();
+				if (textFromServer.contains("&")) {
+					updateData(textFromServer);
+				}
+				
 				System.out.println(textFromServer);
 		        length += textFromServer.length();
 			}
@@ -325,6 +299,42 @@ public class JokeClient {
 			}
     	}
 	}
+	
+	private void updateData(String cookieString) {
+		if (cookieString == null) {
+			throw new NullPointerException("String parameter is null.");
+		}
+		
+		String[] cookieArray = cookieString.split("&");
+		String cookieUUID = cookieArray[0];
+		String cookieValue = cookieArray[1];
+		
+		if(cookieUUID.equals(this.httpCookie.getName())) {
+			if(cookieValue.isEmpty()) {
+				System.out.println("Cookie value is empty.");
+    			throw new IllegalArgumentException("Cookie value is empty."); 
+			}
+			
+			this.httpCookie.setValue(cookieValue);
+			// Last statement ran was a joke
+			if(cookieValue.charAt(0) == 'J') {
+				lastMode = "JOKE";
+				lastJokeCode = cookieValue;
+			}
+			// Last statement ran was a proverb
+			else if(cookieValue.charAt(0) == 'P') {
+				lastMode = "PROVERB";
+				lastProverbCode = cookieValue;
+			} 
+		else {
+			System.out.println("Cookie contains the wrong UUID.");
+			throw new IllegalArgumentException("Cookie contains the wrong UUID.");
+		}
+		}
+		
+	}
+	
+	
 	// Main job is to try to connect to an admin server 
 	public static void main(String args[]) {
 			
