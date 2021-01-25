@@ -1,3 +1,40 @@
+/*--------------------------------------------------------
+
+1. Jordan Johnson / 1/24/11:
+
+2. Java version used, if not the official version for the class:
+
+build 11.0.4+11
+
+3. Precise command-line compilation examples / instructions:
+
+Note: 
+One command to compile all needed classes 
+> javac .\Worker.java JokeClient.java JokeClientAdmin.java JokeServer.java AdminLooper.java AdminWorker.java
+
+4. Precise examples / instructions to run this program:
+
+In different shell windows:
+
+> java JokeServer
+> java JokeClient
+> java JokeClientAdmin
+
+5. List of files needed for running the program.
+
+ a. checklist.html
+ b. JokeServer.java
+ c. JokeClient.java
+ d. JokeClientAdmin.java
+ e. Worker.java
+ f. AdminLooper.java 
+ g. AdminWorker.java
+
+5. Notes:
+
+
+----------------------------------------------------------*/
+
 package main;
 
 import java.io.*; // Get the Input Output libraries
@@ -18,10 +55,10 @@ public class Worker extends Thread {
 	}};
 
 	private NavigableMap<String, String> proverbSymbols = new TreeMap<>() {{
-	    put("JA", "How does a cucumber become a pickle? \n \t\t It goes through a jarring experience.");
-	    put("JB", "What's brown and sticky? \n \t A stick.");
-	    put("JC", "What did one volcano say to the other? \n \t I lava you.");
-	    put("JD", "What do you call two birds in love? \n \t Tweethearts.");
+	    put("PA", "A bad workman always blames his tools.");
+	    put("PB", "A drowning man will clutch at a straw.");
+	    put("PC", "Adversity and loss make a man wise.");
+	    put("PD", "A stitch in time saves nine.");
 	}};
 	
 	private enum ServerState {
@@ -30,6 +67,7 @@ public class Worker extends Thread {
 
 	private Socket socket; // Main class for creating a server connection
 	private String serverMode;
+	private String userName;	// Name of the person using this thread 
 	
 	String printString;
 	
@@ -79,16 +117,24 @@ public class Worker extends Thread {
 		try {
 			in = new BufferedReader (new InputStreamReader(socket.getInputStream()));
 			out = new PrintStream(socket.getOutputStream());
+			
 			// print all jokes 
 			if(this.serverMode.equals(ServerState.JOKE.toString())) {
 				 
 				System.out.println("Printing all jokes...");
+				out.println("Printing all jokes...");
+				out.flush();
 				printAllJokes(out);
+				printAllProverbs(out);
 				 
 			// print all proverbs	 
 			} else if (this.serverMode.equals(ServerState.PROVERB.toString())) {
 				System.out.println("Printing all proverbs...");
+				out.println("Printing all proverbs...");
+				out.flush();
 				printAllProverbs(out);
+				printAllJokes(out);
+				
 			} else {
 				throw new IllegalArgumentException("Illegal state value.");
 			}
@@ -99,12 +145,10 @@ public class Worker extends Thread {
 		}
 	}
 		 
-	
-		 
 	public void printAllJokes(PrintStream printStream) {
-		for(int i = 1; i <= 4; i++) {
-			String joke = jokeSymbols.get(i);
-			printStream.println(joke);
+		for(Map.Entry<String, String> entry : jokeSymbols.entrySet()) {
+			System.out.println(entry.getKey() + ": " + entry.getValue() + "\n");
+			printStream.println(entry.getKey() + ": " + entry.getValue() + "\n");
 			printStream.flush();
 		}
 		printStream.println("\n JOKE CYCLE COMPLETED \n");
@@ -112,9 +156,9 @@ public class Worker extends Thread {
 	}	 	 
 			
 	public void printAllProverbs(PrintStream printStream) {
-		for(int i = 1; i <= 4; i++) {
-			String proverb = proverbSymbols.get(i);
-			printStream.println(proverb);
+		for(Map.Entry<String, String> entry : proverbSymbols.entrySet()) {
+			System.out.println(entry.getKey() + ": " + entry.getValue() + "\n");
+			printStream.println(entry.getKey() + ": " + entry.getValue() + "\n");
 			printStream.flush();
 		}
 		printStream.println("\n PROVERB CYCLE COMPLETED \n"); 
