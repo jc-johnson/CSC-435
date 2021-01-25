@@ -54,7 +54,7 @@ is made.
 
 ----------------------------------------------------------*/
 
-package main;
+
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

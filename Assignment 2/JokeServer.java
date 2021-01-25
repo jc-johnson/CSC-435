@@ -54,7 +54,7 @@ is made.
 
 ----------------------------------------------------------*/
 
-package main;
+
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -268,8 +268,8 @@ public class JokeServer {
 		// JokeServer jokeServer = new JokeServer();
 		
 		// New thread that listens for admin connection on port 5050
-		AdminLooper AL = new AdminLooper(); 
-	    Thread t = new Thread(AL);
+		AdminLooper adminLooper = new AdminLooper(); 
+	    Thread t = new Thread(adminLooper);
 	    t.start();  
 	    
 	    ServerSocket serverSocket;

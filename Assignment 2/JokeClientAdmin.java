@@ -52,7 +52,7 @@ is made.
 
 ----------------------------------------------------------*/
 
-package main;
+
 
 import java.io.*; // Get the Input Output libraries
 import java.net.*; // Get the Java networking libraries

@@ -72,95 +72,54 @@ public class Worker extends Thread {
 
 	// The main work to be completed with this socket connection
 	public void run() {
-		/*
-		
-		// Decide whether to print joke or proverb string
-		if (serverState.equals(ServerState.JOKE.toString())) {
-			 
-			// get next joke according to uuid in cookie 
-			String uuid = clientCookie.getName();
-			String currentString = clientCookie.getValue();
-			
-			// get next joke and print to out stream 
-			String currentJoke = jokeSymbols.get(currentString);
-			String nextJoke = jokeServer.getNextJoke(currentJoke);
-			
-			// print currentJoke to output
-			
-			// update cookie object
-			clientCookie.setValue(nextJoke);
-			
-			// pass cookie object to Worker constructor to print out & pass back cookie 
-			
-			new Worker(socket).start();
-			
-			// jokeServer.printAllJokes();
-			
-			
-			// jokeServer.toggleServerState(); // toggle state after each connection
-			
-		} else if (serverState.equals(ServerState.PROVERB.toString())) {
-			
-			// get next proverb according to uuid in cookie 
-			String uuid = cookie.getName();
-			String currentString = cookie.getValue();
-			
-			// get next joke and print to out stream 
-			String currentProverb = jokeSymbols.get(currentString);
-			String nextProverb = jokeServer.getNextProverb(currentProverb);
-			
-			// print currentProverb to output
-			
-			// update cookie object
-			cookie.setValue(nextProverb);
-			
-			// jokeServer.printAllProverbs();
-			
-			
-			new Worker(socket).start();
-		}
-		*/
-		
-		 // Get I/O streams in/out from the socket - let's you read data in and out and print 
-		 PrintStream out = null;
-		 BufferedReader in = null;
-		 		 
-		 try {
-			 in = new BufferedReader (new InputStreamReader(socket.getInputStream()));		// Reading data in from socket
-			 out = new PrintStream(socket.getOutputStream());								// Print data out from socket 
-			 
-			// get next joke and print to out stream 
-			String cookieString = in.readLine();	// read in cookie string from client - tells server which joke/proverb to run 
-			System.out.println("Cookie string: " + cookieString);
-			// Parse cookieString to get current joke/proverb code for that client 
-			String[] cookieArray = cookieString.split("&");
-			String cookieUUID = cookieArray[0];
-			String cookieValue = cookieArray[1];
-			
+		// Get I/O streams in/out from the socket:
+		PrintStream out = null;
+		BufferedReader in = null;
+		 
+		try {
+			in = new BufferedReader (new InputStreamReader(socket.getInputStream()));
+			out = new PrintStream(socket.getOutputStream());
+			// print all jokes 
 			if(this.serverMode.equals(ServerState.JOKE.toString())) {
-				// Print the entire joke string for this joke symbol 
-				String currentJoke = jokeSymbols.get(cookieValue);
-				// Get the code of next joke in sequence and update cookieString to send back to client
-				String nextJokeCode = getNextJokeCode(currentJoke); 
-				String responseCookie = cookieUUID + "&" + nextJokeCode;
-				out.println(responseCookie);
-				out.flush();
+				 
+				System.out.println("Printing all jokes...");
+				printAllJokes(out);
+				 
+			// print all proverbs	 
 			} else if (this.serverMode.equals(ServerState.PROVERB.toString())) {
-				// Print the entire proverb string for this proverb symbol 
-				String currentProverb = proverbSymbols.get(cookieValue);
-				// Get the code of next proverb in sequence and update cookieString to send back to client
-				String nextProverbCode = getNextProverbCode(currentProverb); 
-				String responseCookie = cookieUUID + "&" + nextProverbCode;
-				out.println(responseCookie);
-				out.flush();
+				System.out.println("Printing all proverbs...");
+				printAllProverbs(out);
 			} else {
-				throw new IllegalArgumentException("Server is in Illegal State.");
-			}	 
-			 socket.close(); // close this connection, but not the server
-		 } catch (IOException ioe) {
-			 System.out.println(ioe);		 
-		 }
-	 }
+				throw new IllegalArgumentException("Illegal state value.");
+			}
+			socket.close();
+		} catch (IOException x) {
+			System.out.println("Server read error");
+			x.printStackTrace ();
+		}
+	}
+		 
+	
+		 
+	public void printAllJokes(PrintStream printStream) {
+		for(int i = 1; i <= 4; i++) {
+			String joke = jokeSymbols.get(i);
+			printStream.println(joke);
+			printStream.flush();
+		}
+		printStream.println("\n JOKE CYCLE COMPLETED \n");
+		printStream.flush();		
+	}	 	 
+			
+	public void printAllProverbs(PrintStream printStream) {
+		for(int i = 1; i <= 4; i++) {
+			String proverb = proverbSymbols.get(i);
+			printStream.println(proverb);
+			printStream.flush();
+		}
+		printStream.println("\n PROVERB CYCLE COMPLETED \n"); 
+		printStream.flush();	
+	}	
 	 
 	// Print given server address 
 	 static void printRemoteAddress(String name, PrintStream out) {
