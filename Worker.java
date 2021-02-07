@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Worker extends Thread {    // Class definition
 	  Socket socket;                   // Class member, socket, local to ListnWorker.
@@ -17,9 +19,8 @@ public class Worker extends Thread {    // Class definition
 	      out = new PrintStream(socket.getOutputStream());
 	      in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	      
-	      String userName;
-	      int numberOne;
-	      int numberTwo;
+	      String userName = "";
+	      String answerString = "";
 	      
 	      // read server input 
 	      while (true) {
@@ -30,36 +31,38 @@ public class Worker extends Thread {    // Class definition
             // Read the line with GET parameters 
             if(currentLine.contains("GET")) {
           	  	// Parse for user name and numbers 
-            	String[] values = currentLine.split("");
+            	String[] values = currentLine.split("&");
+            	      	
           	  	userName = values[0].substring(values[0].lastIndexOf("=")+1);
           	  	
           	  	String numberOneString = values[1].substring(values[1].lastIndexOf("=")+1);
           	  	String numberTwoString = values[2].substring(values[2].lastIndexOf("=")+1);
           	  	
-          	  	numberOne = Integer.parseInt(numberOneString);
-          	  	numberTwo = Integer.parseInt(numberTwoString);
+          	  	Pattern pattern = Pattern.compile("[0-9]\\s");
+          	  	Matcher matcher = pattern.matcher(numberTwoString);
+          	  	String numberTwoGroup;
+          	  	if (matcher.find()) {
+        	  		numberTwoGroup = matcher.group().trim();
+        	  	} else {
+        	  		throw new IllegalArgumentException("Bad argument.");
+        	  	}
+          	  	          	  	
+          	  	int numberOne = Integer.parseInt(numberOneString);
+          	  	int numberTwo = Integer.parseInt(numberTwoGroup);
+          	  	int answer = numberOne + numberTwo;
+          	  	answerString = String.valueOf(answer);
             }
-            
-        }
+	      }
 	      
-	      
-
-	      System.out.println("Sending the HTML Reponse now: " + Integer.toString(WebResponse.i) + "\n" );
-	      String HTMLResponse = "<html> <h1> Hello Browser World! " + Integer.toString(WebResponse.i++) +  "</h1> <p><p> <hr> <p>";
+	      String HTMLResponse = "<html> <h1> Hi " + userName +  "!</h1> <p><p> <p>The sum of the numbers you entered is: " + answerString + "</p><hr> <p>";
 	      
 	      out.println("HTTP/1.1 200 OK");
-	      out.println("Connection: close"); // Can fool with this.
+	      out.println("Connection: close"); 
 	      
-	      // int Len = HTMLResponse.length();
-	      // out.println("Content-Length: " + Integer.toString(Len));
-	      
-	      out.println("Content-Length: 400"); // Lazy, so set high. Calculate later.
+	      out.println("Content-Length: 400"); 
 	      out.println("Content-Type: text/html \r\n\r\n");
 	      out.println(HTMLResponse);
 
-	      for(int j=0; j<6; j++){ // Echo some of the request headers for fun
-	    	  out.println(in.readLine() + "<br>\n"); // Save and calculate length
-	      }                                        // ...if you care to.
 	      out.println("</html>"); 
 		
 	      socket.close(); 
