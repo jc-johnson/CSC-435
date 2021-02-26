@@ -65,7 +65,7 @@ https://www.javacodegeeks.com/2013/07/java-priority-queue-priorityqueue-example.
 -----------------------------------------------------------------------*/
 
 
-package main;
+
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -94,7 +94,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import main.UnverifiedBlockServer.UnverifiedBlockWorker;
 
 public class BlockChainInput {
 	
@@ -172,6 +171,11 @@ public class BlockChainInput {
         	
         processBlocks(recordList);
         readBlocksFromJson("myBlockList.json");
+        
+        // Start our 3 separate threads 
+        new Thread(new PublicKeyServer()).start(); 			// Handle incoming public keys
+		new Thread(new UnverifiedBlockServer()).start(); 	// Handle incoming unverified blocks
+		new Thread(new BlockchainServer()).start(); 		// Handle incoming new blockchains
     }
 	
 	public static void main(String[] args) {
