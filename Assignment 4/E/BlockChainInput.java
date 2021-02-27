@@ -66,7 +66,7 @@ https://www.javacodegeeks.com/2013/07/java-priority-queue-priorityqueue-example.
 
 
 
-
+package com.company;
 
 
 import java.io.BufferedReader;
@@ -115,11 +115,11 @@ public class BlockChainInput {
 
     public static int PID = 0;
 
-    public static int KeyServerPortBase = 6050;
+    public static int PublicKeyServerPortBase = 6050;
     public static int UnverifiedBlockServerPortBase = 6051;
     public static int BlockchainServerPortBase = 6052;
 
-    public static int KeyServerPort = KeyServerPortBase + (PID * 1000);
+    public static int KeyServerPort = PublicKeyServerPortBase + (PID * 1000);
     public static int UnverifiedBlockServerPort = UnverifiedBlockServerPortBase + (PID * 1000);
     public static int BlockchainServerPort = BlockchainServerPortBase + (PID * 1000);
 
@@ -146,6 +146,7 @@ public class BlockChainInput {
 
     public void ListExample(String args[]) throws Exception {
 
+        /*
         int processNumber;
         int UnverifiedBlockPort;
         int BlockChainPort;
@@ -153,6 +154,7 @@ public class BlockChainInput {
         /* CDE If you want to trigger bragging rights functionality... */
         // if (args.length > 1) System.out.println("Special functionality is present \n");
 
+        /*
         if (args.length < 1) processNumber = 0;
         else if (args[0].equals("0")) processNumber = 0;
         else if (args[0].equals("1")) processNumber = 1;
@@ -182,6 +184,7 @@ public class BlockChainInput {
 
         processBlocks(recordList);
         readBlocksFromJson("myBlockList.json");
+        */
 
         // Start our 3 separate threads
         new Thread(new PublicKeyServer()).start(); 			// Handle incoming public keys
@@ -189,8 +192,11 @@ public class BlockChainInput {
         new Thread(new BlockchainServer()).start(); 		// Handle incoming new blockchains
         Thread.sleep(1000);
         System.out.println("Test");
-        multicastToKeyServer();
 
+        multicastToPublicKeyServer();
+        multicastToUVBServer();
+        multicastToBlockChainServer();
+        // multicastToAllServers();
 
     }
 
@@ -200,7 +206,36 @@ public class BlockChainInput {
     }
 
     public void multicastToAllServers() {
+        // Socket socket;
+        // PrintStream toServer;
+        String serverName = "localhost";
 
+        try{
+            // Send message to Key server
+            Socket keyServerSocket = new Socket(serverName, PublicKeyServerPortBase + (1 * 1000));;
+            PrintStream keyServerPrintStream = new PrintStream(keyServerSocket.getOutputStream());;
+            keyServerPrintStream.println("Hello from key server" + 0);
+            keyServerPrintStream.println("Process:" + 0);
+            keyServerPrintStream.flush();
+            keyServerSocket.close();
+
+            // Send message to UVB server
+            Socket UVBSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1 * 1000));
+            PrintStream uvbPrintStream = new PrintStream(UVBSocket.getOutputStream());
+            uvbPrintStream.println("Hello from uvb server" + 0);
+            uvbPrintStream.println("Process:" + 1);
+            uvbPrintStream.flush();
+            UVBSocket.close();
+
+            // Send message to blockchain server
+            Socket BlockChainSocket = new Socket(serverName, BlockchainServerPortBase + (1 * 1000));
+            PrintStream blockChainPrintStream = new PrintStream(BlockChainSocket.getOutputStream());
+            blockChainPrintStream.println("Hello from blockchain server" + 0);
+            blockChainPrintStream.println("Process:" + 2);
+            blockChainPrintStream.flush();
+            BlockChainSocket.close();
+
+        } catch (Exception x) {x.printStackTrace ();}
     }
 
     public void multicastToBlockChainServer() {
@@ -209,46 +244,28 @@ public class BlockChainInput {
         String serverName = "localhost";
 
         try{
-            for(int i=0; i< 3; i++){
-                socket = new Socket(serverName, BlockchainServerPortBase + (i * 1000));
-                toServer = new PrintStream(socket.getOutputStream());
-                toServer.println("FakeKeyProcess" + 0);
-                toServer.flush();
-                socket.close();
-            }
+            socket = new Socket(serverName, BlockchainServerPortBase + (1 * 1000));
+            toServer = new PrintStream(socket.getOutputStream());
+            toServer.println("FakeKeyProcess" + 0);
+            toServer.flush();
+            socket.close();
         }catch (Exception x) {x.printStackTrace ();}
     }
 
-    public void multicastToKeyServer() {
+    public void multicastToPublicKeyServer() {
         Socket socket;
         PrintStream toServer;
         String serverName = "localhost";
 
         try{
-            // Send message to Key server
-            socket = new Socket(serverName, KeyServerPortBase + (1 * 1000));
+            socket = new Socket(serverName, PublicKeyServerPortBase + (1 * 1000));
             toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("Hello from key server" + 0);
+            toServer.println("FakeKeyProcess" + 0);
             toServer.flush();
             socket.close();
-
-            // Send message to UVB server
-            socket = new Socket(serverName, UnverifiedBlockServerPortBase + (1 * 1000));
-            toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("Hello from uvb server" + 0);
-            toServer.flush();
-            socket.close();
-
-            // Send message to blockchain server
-            socket = new Socket(serverName, BlockchainServerPortBase + (1 * 1000));
-            toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("Hello from blockchain server" + 0);
-            toServer.flush();
-            socket.close();
-
-
-
-        }catch (Exception x) {x.printStackTrace ();}
+        }catch (Exception x) {
+            x.printStackTrace ();
+        }
     }
 
     public void multicastToUVBServer() {
@@ -257,14 +274,14 @@ public class BlockChainInput {
         String serverName = "localhost";
 
         try{
-            for(int i=0; i< 3; i++){
-                socket = new Socket(serverName, KeyServerPortBase + (i * 1000));
-                toServer = new PrintStream(socket.getOutputStream());
-                toServer.println("FakeKeyProcess" + 0);
-                toServer.flush();
-                socket.close();
-            }
-        }catch (Exception x) {x.printStackTrace ();}
+            socket = new Socket(serverName, UnverifiedBlockServerPortBase + (1  * 1000));
+            toServer = new PrintStream(socket.getOutputStream());
+            toServer.println("FakeKeyProcess" + 0);
+            toServer.flush();
+            socket.close();
+        }catch (Exception x) {
+            x.printStackTrace ();
+        }
     }
 
     public void processBlocks(LinkedList<BlockRecord> recordList) {
@@ -403,7 +420,9 @@ public class BlockChainInput {
         System.out.println("Running now\n");
         try {
             ListExample(argv);
-        } catch (Exception x) {};
+        } catch (Exception x) {
+            x.printStackTrace();
+        };
     }
 
     class BlockRecord {
@@ -472,6 +491,14 @@ public class BlockChainInput {
         public void setTestString (String test){this.test = test;}
     }
 
+    // main class to run all threads  
+    class mainServer{
+
+    }
+
+    class mainWorker {
+
+    }
 
     // Thread #1
     // Worker thread that handles incoming public keys
