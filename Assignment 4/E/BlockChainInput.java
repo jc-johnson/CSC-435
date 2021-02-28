@@ -149,10 +149,10 @@ public class BlockChainInput {
         Socket socket;
         PrintStream toServer;
         try{
-            for(int i=0; i< numProcesses; i++){
-                socket = new Socket(serverName, Ports.KeyServerPortBase + (i * 1000));
+            for(int i=0; i< 4; i++){
+                socket = new Socket(serverName, PublicKeyServerPortBase + (i * 1000));
                 toServer = new PrintStream(socket.getOutputStream());
-                toServer.println("FakeKeyProcess" + BlockChain.PID); toServer.flush();
+                toServer.println("FakeKeyProcess" + 0); toServer.flush();
                 socket.close();
             }
         }catch (Exception x) {x.printStackTrace ();}
@@ -525,7 +525,14 @@ public class BlockChainInput {
         PublicKeyWorker (Socket socket) {this.socket = socket;}
         public void run(){
             try{
+                System.out.println("In Public Key Worker");
 
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String data = in.readLine ();
+                System.out.println("Got data: " + data);
+                socket.close();
+
+                /*
                 System.out.println("Hello from thread #1" + "\n\n");
 
                 // Multicast to other servers
@@ -558,8 +565,9 @@ public class BlockChainInput {
                 // String data = in.readLine ();
                 // System.out.println("Got key: " + data);
 
-                socket.close();
-            } catch (IOException | InterruptedException x){
+                socket.close();*/
+
+            } catch (IOException x){
                 x.printStackTrace();
             }
         }
@@ -613,8 +621,15 @@ public class BlockChainInput {
             // System.out.println("In Unverified Block Worker");
             try{
 
-                System.out.println("Hello from thread #2" + "\n\n");
+                System.out.println("In UVB Worker");
 
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String data = in.readLine ();
+                System.out.println("Got data: " + data);
+                socket.close();
+
+                /*
+                System.out.println("Hello from thread #2" + "\n\n");
 
                 // Multicast to other servers
                 Thread.sleep(3000);
@@ -635,17 +650,10 @@ public class BlockChainInput {
                 PrintStream uvbPrintStream;
                 uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1002));
                 uvbPrintStream = new PrintStream(socket.getOutputStream());
-                uvbPrintStream.println("Hello from process 1");
+                uvbPrintStream.println("Hello from process 2");
                 uvbPrintStream.flush();
                 uvbSocket.close();
-
-                // ObjectInputStream unverifiedIn = new ObjectInputStream(socket.getInputStream());
-                // BlockRecord = (BlockRecord) unverifiedIn.readObject(); // Read in the UVB as an object
-
-                // System.out.println("Received UVB: " + BlockRecord.getTimeStamp() + " " + BlockRecord.getData());
-
-                // queue.put(BlockRecord); // Note: make sure you have a large enough blocking priority queue to accept all the puts
-                socket.close();
+                */
 
             } catch (Exception x){x.printStackTrace();}
         }
@@ -658,8 +666,16 @@ public class BlockChainInput {
         public void run(){
             try{
 
-                System.out.println("Hello from thread #3" + "\n\n");
+                System.out.println("In Blockchain Worker");
 
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String data = in.readLine ();
+                System.out.println("Got data: " + data);
+                socket.close();
+
+                // System.out.println("Hello from thread #3" + "\n\n");
+
+                /*
                 // Multicast to other servers
                 Thread.sleep(3000);
 
@@ -668,7 +684,7 @@ public class BlockChainInput {
                 PrintStream publicKeyPrintStream;
                 publicKeySocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1002));
                 publicKeyPrintStream = new PrintStream(socket.getOutputStream());
-                publicKeyPrintStream.println("Hello from process 2");
+                publicKeyPrintStream.println("Hello from process 3");
                 publicKeyPrintStream.flush();
                 publicKeySocket.close();
 
@@ -678,25 +694,13 @@ public class BlockChainInput {
                 PrintStream uvbPrintStream;
                 uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1003));
                 uvbPrintStream = new PrintStream(socket.getOutputStream());
-                uvbPrintStream.println("Hello from process 1");
+                uvbPrintStream.println("Hello from process 3");
                 uvbPrintStream.flush();
                 uvbSocket.close();
 
-                Thread.sleep(1000);
+                Thread.sleep(1000); */
 
-				/*
-			    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			    String blockData = "";
-			    String blockDataIn;
-			    while((blockDataIn = in.readLine()) != null){
-			    	blockData = blockData + "\n" + blockDataIn; // Add crlf to make pretty output
-			    }
-			    BlockChain.blockchain = blockData; // Would normally have to check first for winner blockchain before replacing.
-			    System.out.println("         --NEW BLOCKCHAIN--\n" + BlockChain.blockchain + "\n\n");
-			    */
-                socket.close();
-
-            } catch (IOException | InterruptedException x){x.printStackTrace();}
+            } catch (IOException x){x.printStackTrace();}
         }
     }
 
