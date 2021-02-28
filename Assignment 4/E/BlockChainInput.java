@@ -99,6 +99,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class BlockChainInput {
     private static String FILENAME;
+    String serverName = "localhost";
 
     // Priority queue for our blocks
     private Queue<BlockRecord> priorityQueue = new PriorityQueue<>(4, BlockTSComparator);
@@ -143,6 +144,19 @@ public class BlockChainInput {
             return s1.compareTo(s2);
         }
     };
+
+    public void KeySend(){
+        Socket socket;
+        PrintStream toServer;
+        try{
+            for(int i=0; i< numProcesses; i++){
+                socket = new Socket(serverName, Ports.KeyServerPortBase + (i * 1000));
+                toServer = new PrintStream(socket.getOutputStream());
+                toServer.println("FakeKeyProcess" + BlockChain.PID); toServer.flush();
+                socket.close();
+            }
+        }catch (Exception x) {x.printStackTrace ();}
+    }
 
     public void ListExample(String args[]) throws Exception {
 
@@ -194,8 +208,12 @@ public class BlockChainInput {
         System.out.println("Test");
 
         multicastToPublicKeyServer();
+        Thread.sleep(1000);
         multicastToUVBServer();
+        Thread.sleep(1000);
         multicastToBlockChainServer();
+
+
         // multicastToAllServers();
 
     }
@@ -246,7 +264,7 @@ public class BlockChainInput {
         try{
             socket = new Socket(serverName, BlockchainServerPortBase + (1 * 1000));
             toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("FakeKeyProcess" + 0);
+            toServer.println("Hello from main");
             toServer.flush();
             socket.close();
         }catch (Exception x) {x.printStackTrace ();}
@@ -260,7 +278,7 @@ public class BlockChainInput {
         try{
             socket = new Socket(serverName, PublicKeyServerPortBase + (1 * 1000));
             toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("FakeKeyProcess" + 0);
+            toServer.println("Hello from main");
             toServer.flush();
             socket.close();
         }catch (Exception x) {
@@ -276,7 +294,7 @@ public class BlockChainInput {
         try{
             socket = new Socket(serverName, UnverifiedBlockServerPortBase + (1  * 1000));
             toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("FakeKeyProcess" + 0);
+            toServer.println("Hello from main");
             toServer.flush();
             socket.close();
         }catch (Exception x) {
@@ -510,13 +528,40 @@ public class BlockChainInput {
 
                 System.out.println("Hello from thread #1" + "\n\n");
 
+                // Multicast to other servers
+                Thread.sleep(3000);
+
+                // Send string to UVB server
+                Socket uvbSocket;
+                PrintStream uvbPrintStream;
+                uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1001));
+                uvbPrintStream = new PrintStream(socket.getOutputStream());
+                uvbPrintStream.println("Hello from process 1");
+                uvbPrintStream.flush();
+                uvbSocket.close();
+
+                Thread.sleep(1000);
+
+                // Send string to Blockchain server
+                Socket blockChainSocket;
+                PrintStream blockChainPrintStream;
+                try{
+                    blockChainSocket = new Socket(serverName, BlockchainServerPortBase + (1001));
+                    blockChainPrintStream = new PrintStream(socket.getOutputStream());
+                    blockChainPrintStream.println("Hello from process 1");
+                    blockChainPrintStream.flush();
+                    blockChainSocket.close();
+                }catch (Exception x) {x.printStackTrace ();}
+
                 // Read input from the socket
                 // BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 // String data = in.readLine ();
                 // System.out.println("Got key: " + data);
 
                 socket.close();
-            } catch (IOException x){x.printStackTrace();}
+            } catch (IOException | InterruptedException x){
+                x.printStackTrace();
+            }
         }
     }
 
@@ -569,6 +614,31 @@ public class BlockChainInput {
             try{
 
                 System.out.println("Hello from thread #2" + "\n\n");
+
+
+                // Multicast to other servers
+                Thread.sleep(3000);
+
+                // Send string to publicKey server
+                Socket publicKeySocket;
+                PrintStream publicKeyPrintStream;
+                publicKeySocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1001));
+                publicKeyPrintStream = new PrintStream(socket.getOutputStream());
+                publicKeyPrintStream.println("Hello from process 2");
+                publicKeyPrintStream.flush();
+                publicKeySocket.close();
+
+                Thread.sleep(1000);
+
+                // Send string to UVB server
+                Socket uvbSocket;
+                PrintStream uvbPrintStream;
+                uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1002));
+                uvbPrintStream = new PrintStream(socket.getOutputStream());
+                uvbPrintStream.println("Hello from process 1");
+                uvbPrintStream.flush();
+                uvbSocket.close();
+
                 // ObjectInputStream unverifiedIn = new ObjectInputStream(socket.getInputStream());
                 // BlockRecord = (BlockRecord) unverifiedIn.readObject(); // Read in the UVB as an object
 
@@ -576,6 +646,7 @@ public class BlockChainInput {
 
                 // queue.put(BlockRecord); // Note: make sure you have a large enough blocking priority queue to accept all the puts
                 socket.close();
+
             } catch (Exception x){x.printStackTrace();}
         }
     }
@@ -589,6 +660,30 @@ public class BlockChainInput {
 
                 System.out.println("Hello from thread #3" + "\n\n");
 
+                // Multicast to other servers
+                Thread.sleep(3000);
+
+                // Send string to publicKey server
+                Socket publicKeySocket;
+                PrintStream publicKeyPrintStream;
+                publicKeySocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1002));
+                publicKeyPrintStream = new PrintStream(socket.getOutputStream());
+                publicKeyPrintStream.println("Hello from process 2");
+                publicKeyPrintStream.flush();
+                publicKeySocket.close();
+
+
+                // Send string to UVB server
+                Socket uvbSocket;
+                PrintStream uvbPrintStream;
+                uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1003));
+                uvbPrintStream = new PrintStream(socket.getOutputStream());
+                uvbPrintStream.println("Hello from process 1");
+                uvbPrintStream.flush();
+                uvbSocket.close();
+
+                Thread.sleep(1000);
+
 				/*
 			    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			    String blockData = "";
@@ -600,7 +695,8 @@ public class BlockChainInput {
 			    System.out.println("         --NEW BLOCKCHAIN--\n" + BlockChain.blockchain + "\n\n");
 			    */
                 socket.close();
-            } catch (IOException x){x.printStackTrace();}
+
+            } catch (IOException | InterruptedException x){x.printStackTrace();}
         }
     }
 
