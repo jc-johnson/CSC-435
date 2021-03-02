@@ -230,6 +230,22 @@ public class BlockChainInput {
         Thread.sleep(1000);
         System.out.println("Test");
 
+         */
+
+        // Generate public key and multicast
+        for (int i = 0; i < 4; i++) {
+            ProcessBlock block = new ProcessBlock(i);
+            KeyPair keyPair = GeneratePublicPrivateKey();
+            if (keyPair == null){
+                throw new NullPointerException("Key pair is null.");
+            }
+            PrivateKey privateKey = keyPair.getPrivate();
+            PublicKey publicKey = keyPair.getPublic();
+            block.setPublicKey(publicKey);
+
+
+
+        }
         multicastToPublicKeyServer();
         Thread.sleep(1000);
         multicastToUVBServer();
@@ -237,7 +253,7 @@ public class BlockChainInput {
         multicastToBlockChainServer();
         // multicastToAllServers();
 
-         */
+
 
         // Generate public/private keys
         KeyPair keyPair = GeneratePublicPrivateKey();
@@ -525,23 +541,7 @@ public class BlockChainInput {
         };
     }
 
-    /*
-    Creating the "work" puzzle
-    There are many ways to create "work" for a process. We give the process a puzzle to solve.
-    It takes some random amount of time within boundaries. Processes compete to see who can solve the puzzle first.
-    One way to make work is to create a small random seed string that is concatenated to some string of data from the
-    block giving us the new longer string we'll call CAT. Create a 256-bit hash of CAT (using a known algorithm).
-    Examine only the leftmost 16 bits of the hash value, interpreting them as an unsigned 16-bit number (
-    giving us a range of 0-65535). If the number is less than 5000 (or whatever number suits your code) then you have solved the puzzle.
 
-Otherwise, pick a new small random seed string, and repeat the above. Do this until you have solved the puzzle.
-
-If you change the 5000 target to 2500, the puzzle gets twice as hard, and takes twice as long. If you require that the answer to the puzzle be recorded along with the original data, then it is impossible to cheat.
-
-For our purposes we will use real work (see the sample code provided), but we will make the puzzle easier and use the sleep() method to artificially extend the work time to a second or two. (This makes debugging and grading easier.) But because we are looking at the value of the hash, we are still doing real work that cannot be faked.
-
-For ease of development and grading, don't make the work take more than a a few seconds on average. In a normal implementation we might want it to take 10 minutes. This can always easily be adjusted dynamically (by making the puzzle easier or harder) so that no matter how fast the computers get, or how many cooperating processes we have, the puzzle always takes about the same amount of time to solve.
-     */
     public void WorkPuzzle(String blockText) throws NoSuchAlgorithmException {
         Socket socket;
         PrintStream toServer;
@@ -664,41 +664,6 @@ For ease of development and grading, don't make the work take more than a a few 
                 String data = in.readLine ();
                 System.out.println("Got data: " + data);
                 socket.close();
-
-                /*
-                System.out.println("Hello from thread #1" + "\n\n");
-
-                // Multicast to other servers
-                Thread.sleep(3000);
-
-                // Send string to UVB server
-                Socket uvbSocket;
-                PrintStream uvbPrintStream;
-                uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1001));
-                uvbPrintStream = new PrintStream(socket.getOutputStream());
-                uvbPrintStream.println("Hello from process 1");
-                uvbPrintStream.flush();
-                uvbSocket.close();
-
-                Thread.sleep(1000);
-
-                // Send string to Blockchain server
-                Socket blockChainSocket;
-                PrintStream blockChainPrintStream;
-                try{
-                    blockChainSocket = new Socket(serverName, BlockchainServerPortBase + (1001));
-                    blockChainPrintStream = new PrintStream(socket.getOutputStream());
-                    blockChainPrintStream.println("Hello from process 1");
-                    blockChainPrintStream.flush();
-                    blockChainSocket.close();
-                }catch (Exception x) {x.printStackTrace ();}
-
-                // Read input from the socket
-                // BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                // String data = in.readLine ();
-                // System.out.println("Got key: " + data);
-
-                socket.close();*/
 
             } catch (IOException x){
                 x.printStackTrace();
@@ -906,7 +871,7 @@ For ease of development and grading, don't make the work take more than a a few 
     // Would normally keep a process block for each process in the multicast group:
     class ProcessBlock{
         int processID;
-        PublicKey pubKey;
+        PublicKey publicKey;
         int port;
         String IPAddress;
 
@@ -914,12 +879,12 @@ For ease of development and grading, don't make the work take more than a a few 
             this.processID = processID;
         }
 
-        public PublicKey getPubKey() {
-            return pubKey;
+        public PublicKey getPublicKey() {
+            return publicKey;
         }
 
-        public void setPubKey(PublicKey pubKey) {
-            this.pubKey = pubKey;
+        public void setPublicKey(PublicKey pubKey) {
+            this.publicKey = pubKey;
         }
 
         public int getPort() {
