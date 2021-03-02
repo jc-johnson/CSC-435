@@ -174,9 +174,7 @@ public class BlockChainInput {
         keyGen.initialize(1024, random);
         KeyPair pair = keyGen.generateKeyPair();
 
-
         return pair;
-
     }
 
     // main method
@@ -233,6 +231,9 @@ public class BlockChainInput {
          */
 
         // Generate public key and multicast
+        multicastToPublicKeyServer();
+
+
         for (int i = 0; i < 4; i++) {
             ProcessBlock block = new ProcessBlock(i);
             KeyPair keyPair = GeneratePublicPrivateKey();
@@ -243,6 +244,27 @@ public class BlockChainInput {
             PublicKey publicKey = keyPair.getPublic();
             block.setPublicKey(publicKey);
 
+            // Multicast public key to key server
+            Socket keyServerSocket = new Socket(serverName, PublicKeyServerPortBase + i );
+            PrintStream keyServerPrintStream = new PrintStream(keyServerSocket.getOutputStream());;
+            keyServerPrintStream.println("Hello from process" + i);
+            keyServerPrintStream.println(publicKey.toString());
+            keyServerPrintStream.flush();
+
+            // Read in response from key server
+            InputStream inputStream = keyServerSocket.getInputStream();
+            byte[] buffer = new byte[1024];
+            int read;
+            while((read = inputStream.read(buffer)) != -1) {
+                String output = new String(buffer, 0, read);
+                System.out.println(output);
+                System.out.flush();
+            }
+            keyServerSocket.close();
+
+            // sign
+
+            // multicast block data
 
 
         }
@@ -342,19 +364,26 @@ public class BlockChainInput {
         }catch (Exception x) {x.printStackTrace ();}
     }
 
-    public void multicastToPublicKeyServer() {
+    public void multicastToPublicKeyServer() throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
         Socket socket;
         PrintStream toServer;
         String serverName = "localhost";
 
-        try{
-            socket = new Socket(serverName, PublicKeyServerPortBase + (1 * 1000));
+        // Generate public/private keys
+        KeyPair keyPair = GeneratePublicPrivateKey();
+        if (keyPair == null){
+            throw new NullPointerException("Key pair is null.");
+        }
+        PrivateKey privateKey = keyPair.getPrivate();
+        PublicKey publicKey = keyPair.getPublic();
+
+        for (int i = 0; i < 3; i++) {
+            socket = new Socket(serverName, PublicKeyServerPortBase + i);
             toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("Hello from main");
+            String data = i + publicKey.toString(); // pass the process number along with the public key
+            toServer.println(data);
             toServer.flush();
             socket.close();
-        }catch (Exception x) {
-            x.printStackTrace ();
         }
     }
 
@@ -541,12 +570,20 @@ public class BlockChainInput {
         };
     }
 
+    // Verify if a process has signed a piece of data
+    public static boolean VerifySignature(byte[] data, PublicKey publicKey, byte[] decode)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature signer = Signature.getInstance("SHA1withDSA");
+        signer.initVerify(publicKey);
+        signer.update(data);
+        return (signer.verify(decode));
+    }
 
     public void WorkPuzzle(String blockText) throws NoSuchAlgorithmException {
         Socket socket;
         PrintStream toServer;
         try{
-            for(int i=0; i< 4; i++) {
+            for(int i=0; i<4; i++) {
                 socket = new Socket(serverName, UnverifiedBlockServerPortBase + (i * 1000));
                 toServer = new PrintStream(socket.getOutputStream());
                 toServer.println("FakeKeyProcess " + i);
@@ -762,12 +799,11 @@ public class BlockChainInput {
                 int workNumber = Integer.parseInt(stringOut.substring(0,4),16);
                 // Puzzle is not solved - could make the work harder by decreasing 20000
                 if (!(workNumber < 20000)){
-                    System.out.format("%d is not less than 20,000 so we did not solve the puzzle\n\n", workNumber);
+                    System.out.format("Puzzle not solved. Work number: %d", workNumber);
                 }
                 // Puzzle is solved
                 if (workNumber < 20000){
-                    System.out.format("%d IS less than 20,000 so puzzle solved!\n", workNumber);
-                    System.out.println("The seed (puzzle answer) was: " + randomString);
+                    System.out.format("Work number: %d. Puzzle solved!\n", workNumber);
                 }
                 // Check if blockchain has been updated
                 // if so - end this process and start over
