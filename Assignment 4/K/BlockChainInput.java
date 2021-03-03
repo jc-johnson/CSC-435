@@ -99,6 +99,9 @@ public class BlockChainInput {
     // List to hold Unverified blocks
     private LinkedList<BlockRecord> blockRecordList = new LinkedList<BlockRecord>();
 
+    // Hold blocks read in from JSON files
+    private LinkedList<BlockRecord> jsonBlockRecordList = new LinkedList<BlockRecord>();
+
     // Store input values - update to read in additional values from files
     private static final int FirstName = 0;
     private static final int LastName = 1;
@@ -117,9 +120,10 @@ public class BlockChainInput {
     public static int UnverifiedBlockServerPort = UnverifiedBlockServerPortBase + PID;
     public static int BlockchainServerPort = BlockchainServerPortBase + PID;
 
+    String outputFile = "";
+
     String publicKeyFileName = "PublicKey.json";
-    String publicKeyString;
-    String privateKeyString;
+
     private final String  publicKeyMapString = "publicKey";
     private final String privateKeyMapString = "privateKey";
 
@@ -195,10 +199,6 @@ public class BlockChainInput {
         int UnverifiedBlockPort;
         int BlockChainPort;
 
-        /* CDE If you want to trigger bragging rights functionality... */
-        // if (args.length > 1) System.out.println("Special functionality is present \n");
-
-
         if (args.length < 1) processNumber = 0;
         else if (args[0].equals("0")) processNumber = 0;
         else if (args[0].equals("1")) processNumber = 1;
@@ -221,15 +221,15 @@ public class BlockChainInput {
         System.out.println("Using input file: " + FILENAME);
 
         // 	Refactoring long method
-        // LinkedList<BlockRecord> recordList = readBlocksFromFile(processNumber);
+        LinkedList<BlockRecord> recordList = readBlocksFromFile(processNumber);
+        // jsonBlockRecordList = readBlocksFromFile(processNumber);
+        // readBlocksFromJson("myBlockList.json");
         /* -- Commented out for testing. TODO: Readd
         if (recordList==null) {
             throw new NullPointerException("block record list is null");
         }*/
 
         // processBlocks(recordList);
-        // readBlocksFromJson("myBlockList.json");
-
 
         // Start our 3 separate threads
 
@@ -479,7 +479,7 @@ public class BlockChainInput {
         // Read in blocks from a given file name
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(FILENAME));
-            String[] tokens = new String[20];
+            String[] tokens;
             String InputLineStr;
             String uuidString;
             UUID idA;
@@ -780,7 +780,7 @@ public class BlockChainInput {
                         if (j < 3) break;                                               // winning solution
                     }
 
-                    // verification
+                    // Block verification
                     if(!blockchain.contains(data.substring(1, 9))){
                         fakeVerifiedBlock = "[" + data + " verified by P" + PID + " at time "
                                 + Integer.toString(ThreadLocalRandom.current().nextInt(100,1000)) + "]\n";
@@ -793,7 +793,7 @@ public class BlockChainInput {
                             toBlockChainServer.println(tempblockchain);
                             toBlockChainServer.flush();
                             blockChainSocket.close();
-                            Thread.sleep(2000);
+                            Thread.sleep(2000);  // Sleep to allow all processes to catch up
                         }
                     }
                     // Wait until block chain server gets all verified blocks before processing a new unverified block
@@ -849,33 +849,13 @@ public class BlockChainInput {
             }catch (IOException ioe) {System.out.println(ioe);}
         }
 
-        // Inner class to get access to block reocrd queue
+        // Inner class to get access to block record queue
         // Thread #2 - This working thread class receives unverified blocks and puts them on the priority queue.
         class UnverifiedBlockWorker extends Thread {
             Socket socket;
-            private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
             UnverifiedBlockWorker (Socket socket) {
                 this.socket = socket;
-            }
-
-            // Convert byte array to a string
-            public String ByteArrayToString(byte[] ba){
-                StringBuilder hex = new StringBuilder(ba.length * 2);
-                for(int i=0; i < ba.length; i++){
-                    hex.append(String.format("%02X", ba[i]));
-                }
-                return hex.toString();
-            }
-
-            // Return random alphanumeric number
-            public String randomAlphaNumeric(int count) {
-                StringBuilder builder = new StringBuilder();
-                while (count-- != 0) {
-                    int character = (int)(Math.random()*ALPHA_NUMERIC_STRING.length());
-                    builder.append(ALPHA_NUMERIC_STRING.charAt(character));
-                }
-                return builder.toString();
             }
 
             // Read in UVB and put them on queue
@@ -895,7 +875,7 @@ public class BlockChainInput {
                     // Create block record from read-in json
                     BlockRecord blockRecord = gson.fromJson(stringBuffer.toString(), BlockRecord.class);
                     System.out.println("Received UVB: " + blockRecord.getTimeStamp() + " " + blockRecord.getData());
-                    queue.put(blockRecord); // Put unverified block on queue to be consumed
+                    queue.put(blockRecord); // Put unverified block on queue to be consumed later
                     socket.close();
                 } catch (Exception x){x.printStackTrace();}
             }
@@ -904,8 +884,9 @@ public class BlockChainInput {
 
 
 
-    // Thread #3 - Handles incoming alternative blockchains. Compare to our existing blockchain and replace if the new one is more valid than our current.
-    class BlockchainWorker extends Thread { // Class definition
+    // Thread #3 - Handles incoming alternative blockchains.
+    // Compare to our existing blockchain and replace if the new one is more valid than our current.
+    class BlockchainWorker extends Thread {
         Socket socket;
         BlockchainWorker (Socket socket) {this.socket = socket;}
         public void run(){
