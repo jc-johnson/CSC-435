@@ -213,13 +213,13 @@ public class BlockChainInput {
         System.out.println("Using input file: " + FILENAME);
 
         // Read in blocks from file
-        /*
-        blockRecordList = readBlocksFromFile(processNumber);
+
+        readBlocksFromFile(processNumber);
 
         if (blockRecordList==null) {
             throw new NullPointerException("block record list is null");
         }
-        */
+
         // Start our 3 separate threads
 
         new Thread(new PublicKeyServer()).start(); 			// Handle incoming public keys
@@ -349,9 +349,8 @@ public class BlockChainInput {
 
         try{
             // TODO: For testing
-
             // Create fake block data and add it to Linked List
-
+            /*
             for (int i=0; i < 4; i++) {
                 BlockRecord tempBlock = new BlockRecord();
                 fakeBlockData = "(Block#" + Integer.toString(((PID+1)*10)+i) + " from P"+ PID + ")";
@@ -362,7 +361,7 @@ public class BlockChainInput {
                 timeStampString = timeFormat + "." + i;
                 tempBlock.setTimeStamp(timeStampString);
                 blockRecordList.add(tempBlock);
-            }
+            }*/
 
             // Multicast the blocks read in from JSON to uvb server
             Collections.shuffle(blockRecordList);
@@ -428,17 +427,18 @@ public class BlockChainInput {
         } catch (IOException e) {e.printStackTrace();}
     }
 
-    public LinkedList<BlockRecord> readBlocksFromFile(int processNumber) {
+    public void readBlocksFromFile(int processNumber) {
+        LinkedList<BlockRecord> recordList = new LinkedList<BlockRecord>();
+
         // Read in blocks from a given file name
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(FILENAME));
             String[] tokens;
             String InputLineStr;
             String uuidString;
-            UUID idA;
 
             StringWriter stringWriter = new StringWriter();
-            LinkedList<BlockRecord> recordList = new LinkedList<BlockRecord>();
+
             int n = 0;
 
             // Read in lines from file, parse block values, add the block to our list
@@ -475,20 +475,16 @@ public class BlockChainInput {
                 BlockRecord.setRx(tokens[RX]);
                 BlockRecord.setTestString(tokens[TEST]);
 
-                recordList.add(BlockRecord);
+                blockRecordList.add(BlockRecord);
                 n++;
             }
             System.out.println(n + " records read." + "\n");
-            System.out.println("Records in the linked list:");
-
-            return recordList;
 
         } catch (FileNotFoundException exception) {
             exception.printStackTrace();
         } catch(Exception exception) {
             exception.printStackTrace();
         }
-        return null;
     }
 
     // Read in our public key for signing
