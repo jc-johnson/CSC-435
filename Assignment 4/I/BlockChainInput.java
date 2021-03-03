@@ -70,10 +70,9 @@ package com.company;
 
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
@@ -82,16 +81,25 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import sun.awt.image.ImageWatched;
 // import sun.misc.BASE64Encoder;
  import java.util.Base64;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class BlockChainInput {
     private static String FILENAME;
     String serverName = "localhost";
+    static String blockchain = "[First block]"; // Initialize our block chain
+    static int numProcesses = 3;
+    static int PID = 0;
 
     // Priority queue for our blocks
-    private Queue<BlockRecord> priorityQueue = new PriorityQueue<>(4, BlockTSComparator);
+    final PriorityBlockingQueue<BlockRecord> priorityQueue = new PriorityBlockingQueue<>(4, BlockTSComparator);
+
+    // List to hold Unverified blocks
+    private LinkedList<BlockRecord> blockRecordList = new LinkedList<BlockRecord>();
 
     // Store input values - update to read in additional values from files
     private static final int FirstName = 0;
@@ -102,8 +110,6 @@ public class BlockChainInput {
     private static final int TREAT = 5;
     private static final int RX = 6;
     private static final int TEST = 7;
-
-    public static int PID = 0;
 
     public static int PublicKeyServerPortBase = 6050;
     public static int UnverifiedBlockServerPortBase = 6051;
@@ -118,7 +124,6 @@ public class BlockChainInput {
     String privateKeyString;
     private final String  publicKeyMapString = "publicKey";
     private final String privateKeyMapString = "privateKey";
-
 
     public BlockChainInput (String argv[]) {
         System.out.println("In the constructor...");
@@ -232,6 +237,8 @@ public class BlockChainInput {
 
         // Generate public key and multicast
         multicastToPublicKeyServer();
+        // Multicast to unverified blocks
+        multicastToUVBServer();
 
 
         for (int i = 0; i < 4; i++) {
@@ -269,7 +276,7 @@ public class BlockChainInput {
 
         }
         multicastToPublicKeyServer();
-        Thread.sleep(1000);
+        Thread.sleep(1000);  // Wait for public keys to send
         multicastToUVBServer();
         Thread.sleep(1000);
         multicastToBlockChainServer();
@@ -377,30 +384,69 @@ public class BlockChainInput {
         PrivateKey privateKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < numProcesses; i++) {
             socket = new Socket(serverName, PublicKeyServerPortBase + i);
             toServer = new PrintStream(socket.getOutputStream());
-            String data = i + publicKey.toString(); // pass the process number along with the public key
+            String data = publicKey.toString() + PID; // pass the process number along with the public key
             toServer.println(data);
             toServer.flush();
             socket.close();
         }
     }
 
-    public void multicastToUVBServer() {
+    // Pass uvbs over the socket
+    public void  multicastToUVBServer() throws IOException {
         Socket socket;
         PrintStream toServer;
         String serverName = "localhost";
 
+        BlockRecord tempRecord;
+
+        String fakeBlockData;
+        String T1;
+        String TimeStampString;
+        Date date;
+        Random r = new Random();
+
         try{
-            socket = new Socket(serverName, UnverifiedBlockServerPortBase + (1  * 1000));
-            toServer = new PrintStream(socket.getOutputStream());
-            toServer.println("Hello from main");
-            toServer.flush();
-            socket.close();
-        }catch (Exception x) {
-            x.printStackTrace ();
-        }
+            for (int i=0; i < 4; i++) {
+                // Create fake block data and set it
+                BlockRecord tempBlock = new BlockRecord();
+                fakeBlockData = "(Block#" + Integer.toString(((PID+1)*10)+i) + " from P"+ PID + ")";
+                tempBlock.setData(fakeBlockData);
+
+                date = new Date();
+                T1 = String.format("%1$s %2$tF.%2$tT", "", date); // Create the TimeStamp string.
+                TimeStampString = T1 + "." + i;
+
+                tempBlock.setTimeStamp(TimeStampString); // Will be able to priority sort by TimeStamp
+                blockRecordList.add(tempBlock);
+            }
+            Collections.shuffle(blockRecordList); // Shuffle the list to later demonstrate how the priority queue sorts them.
+
+            Iterator<BlockRecord> iterator = blockRecordList.iterator();
+
+
+            // Send block objects over sockets
+            ObjectOutputStream toServerOOS = null;
+            for(int i = 0; i < numProcesses; i++){// Send some sample Unverified Blocks (UVBs) to each process
+                System.out.println("Sending UVBs to process " + i + "...");
+                iterator = blockRecordList.iterator();
+                while(iterator.hasNext()){
+                    // Client connection. Triggers Unverified Block Worker in other process's UVB server:
+                    socket = new Socket(serverName, Ports.UnverifiedBlockServerPortBase + i);
+                    toServerOOS = new ObjectOutputStream(socket.getOutputStream());
+                    Thread.sleep((r.nextInt(9) * 100)); // Sleep up to a second to randominze when sent.
+                    tempRecord = iterator.next();
+                    // System.out.println("UVB TempRec for P" + i + ": " + tempRec.getTimeStamp() + " " + tempRec.getData());
+                    toServerOOS.writeObject(tempRecord); // Send the unverified block record object
+                    toServerOOS.flush();
+                    socket.close();
+                }
+            }
+            Thread.sleep((r.nextInt(9) * 100)); // Sleep up to a second to randominze when sent.
+        }catch (Exception x) {x.printStackTrace ();}
+
     }
 
     public void processBlocks(LinkedList<BlockRecord> recordList) {
@@ -579,26 +625,6 @@ public class BlockChainInput {
         return (signer.verify(decode));
     }
 
-    public void WorkPuzzle(String blockText) throws NoSuchAlgorithmException {
-        Socket socket;
-        PrintStream toServer;
-        try{
-            for(int i=0; i<4; i++) {
-                socket = new Socket(serverName, UnverifiedBlockServerPortBase + (i * 1000));
-                toServer = new PrintStream(socket.getOutputStream());
-                toServer.println("FakeKeyProcess " + i);
-
-
-                toServer.println("Sending data to do work. ");
-                toServer.println("Data text");
-
-                toServer.flush();
-                socket.close();
-            }
-        } catch (Exception x) {x.printStackTrace ();}
-
-    }
-
     public void WriteKeyToFile(String publicKey, String fileName){
         try {
             Map<String, Object> map = new HashMap<>();
@@ -636,6 +662,7 @@ public class BlockChainInput {
         String Treat;
         String Rx;
         String test;
+        String data;
 
         /* Examples of accessors for the BlockRecord fields: */
         public String getBlockID() {return BlockID;}
@@ -682,6 +709,14 @@ public class BlockChainInput {
 
         public String getTestString() {return test;}
         public void setTestString (String test){this.test = test;}
+
+        public String getData() {
+            return data;
+        }
+
+        public void setData(String data) {
+            this.data = data;
+        }
     }
 
     // Thread #1
@@ -725,10 +760,91 @@ public class BlockChainInput {
         }
     }
 
+    // From given utility code
+    class UnverifiedBlockConsumer implements Runnable {
+
+        PriorityBlockingQueue<com.company.BlockRecord> queue; // Passed from BC object.
+        int PID;
+        UnverifiedBlockConsumer(PriorityBlockingQueue<com.company.BlockRecord> queue){
+            this.queue = queue;
+        }
+
+        public void run(){
+
+            String data;
+            com.company.BlockRecord tempRecord;
+            PrintStream toBlockChainServer; // Send verified blocks to block chain server
+            Socket blockChainSocket;    // used to send verified block chains to block chain server
+            String fakeVerifiedBlock;
+            Random r = new Random();
+
+            System.out.println("Starting the Unverified Block Priority Queue Consumer thread.\n");
+
+            // Take block record from incoming queue. Do fake work and send verified blocks to blockchain.
+            try {
+
+                while(true) {
+                    tempRecord = queue.take();
+                    data = tempRecord.getData();
+
+                    // fake work puzzle
+                    int j;
+                    for(int i=0; i< 100; i++){
+                        j = ThreadLocalRandom.current().nextInt(0,10);      // Get random number beteen 0 and 10
+                        Thread.sleep((r.nextInt(9) * 100));                         // Sleep up to a second to randominze how much fake work is being done
+                        if (j < 3) break;                                               // winning solution
+                    }
+
+                    // verification
+                    if(!bc.blockchain.contains(data.substring(1, 9))){
+                        fakeVerifiedBlock = "[" + data + " verified by P" + PID + " at time "
+                                + Integer.toString(ThreadLocalRandom.current().nextInt(100,1000)) + "]\n";
+                        String tempblockchain = fakeVerifiedBlock + bc.blockchain; // add the verified block to the chain
+
+                        // Mulitcast verified block chain and send to block chain server to officially add to final block chain
+                        for(int i=0; i < numProcesses; i++){ // Send to each process in group, including THIS process:
+                            blockChainSocket = new Socket(bc.serverName, Ports.BlockchainServerPortBase + i);
+                            toBlockChainServer = new PrintStream(blockChainSocket.getOutputStream());
+                            toBlockChainServer.println(tempblockchain); toBlockChainServer.flush();
+                            blockChainSocket.close();
+                        }
+                    }
+                    // Wait until block chain server gets all verified blocks before processing a new unverified block
+                    Thread.sleep(1500);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     // Start worker thread #2 to handle unverified blocks
     class UnverifiedBlockServer implements Runnable {
 
+        // queue to hold unverified blocks
         BlockingQueue<BlockRecord> queue;
+        UnverifiedBlockServer(BlockingQueue<BlockRecord> queue){
+            this.queue = queue;
+        }
+
+        // Decide the order of uvbs
+        public  Comparator<com.company.BlockRecord> BlockTSComparator = new Comparator<com.company.BlockRecord>()
+        {
+            @Override
+            public int compare(com.company.BlockRecord b1, com.company.BlockRecord b2)
+            {
+                String s1 = b1.getTimeStamp();
+                String s2 = b2.getTimeStamp();
+                if (s1 == s2) {return 0;}
+                if (s1 == null) {return -1;}
+                if (s2 == null) {return 1;}
+                return s1.compareTo(s2);
+            }
+        };
 
         // Start UVB server and open port to receive Unverified Blocks
         public void run(){
@@ -737,7 +853,7 @@ public class BlockChainInput {
             System.out.println("Starting the Unverified Block Server input thread using " +
                     Integer.toString(UnverifiedBlockServerPort));
             try{
-                ServerSocket UVBServer = new ServerSocket(UnverifiedBlockServerPort + 1000);
+                ServerSocket UVBServer = new ServerSocket(UnverifiedBlockServerPort, queueLength);
                 while (true) {
                     // Open socket connection to accept new unverified blocks
                     socket = UVBServer.accept();
@@ -746,102 +862,53 @@ public class BlockChainInput {
             }catch (IOException ioe) {System.out.println(ioe);}
         }
 
+        // Inner class to get access to block reocrd queue
+        // Thread #2 - This working thread class receives unverified blocks and puts them on the priority queue.
+        class UnverifiedBlockWorker extends Thread {
+            Socket socket;
+            private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            UnverifiedBlockWorker (Socket socket) {
+                this.socket = socket;
+            }
+
+
+            public String ByteArrayToString(byte[] ba){
+                StringBuilder hex = new StringBuilder(ba.length * 2);
+                for(int i=0; i < ba.length; i++){
+                    hex.append(String.format("%02X", ba[i]));
+                }
+                return hex.toString();
+            }
+
+            // Return random alphanumeric number
+            public String randomAlphaNumeric(int count) {
+                StringBuilder builder = new StringBuilder();
+                while (count-- != 0) {
+                    int character = (int)(Math.random()*ALPHA_NUMERIC_STRING.length());
+                    builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+                }
+                return builder.toString();
+            }
+
+            // Read in UVB and put them on queue
+            public void run(){
+                System.out.println("In Unverified Block Worker");
+                BlockRecord blockRecord = new BlockRecord();
+                try{
+                    ObjectInputStream unverifiedIn = new ObjectInputStream(socket.getInputStream());
+                    blockRecord = (BlockRecord) unverifiedIn.readObject();
+                    System.out.println("Received UVB: " + blockRecord.getTimeStamp() + " " + blockRecord.getData());
+                    queue.put(blockRecord);
+                    socket.close();
+
+
+                } catch (Exception x){x.printStackTrace();}
+            }
+        }
     }
 
-    // Thread #2 - This working thread class receives unverified blocks and puts them on the priority queue.
-    class UnverifiedBlockWorker extends Thread {
-        Socket socket;
-        private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-        UnverifiedBlockWorker (Socket socket) {this.socket = socket;}
-        BlockRecord BlockRecord = new BlockRecord();
-
-        public String ByteArrayToString(byte[] ba){
-            StringBuilder hex = new StringBuilder(ba.length * 2);
-            for(int i=0; i < ba.length; i++){
-                hex.append(String.format("%02X", ba[i]));
-            }
-            return hex.toString();
-        }
-
-        // Return random alphanumeric number
-        public String randomAlphaNumeric(int count) {
-            StringBuilder builder = new StringBuilder();
-            while (count-- != 0) {
-                int character = (int)(Math.random()*ALPHA_NUMERIC_STRING.length());
-                builder.append(ALPHA_NUMERIC_STRING.charAt(character));
-            }
-            return builder.toString();
-        }
-
-        // Read in UVB and put them on queue
-        public void run(){
-            // System.out.println("In Unverified Block Worker");
-            try{
-
-                System.out.println("In UVB Worker");
-
-                // Read in uvb blocks
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String data = in.readLine();
-                System.out.println("Got uvb data: " + data);
-
-                String randomString = randomAlphaNumeric(8);
-                String concatenatedString = randomString + data;
-
-                // Hash concatenated string with the input string
-                MessageDigest MD = MessageDigest.getInstance("SHA-256");
-                byte[] bytesHash = MD.digest(concatenatedString.getBytes("UTF-8"));
-
-                // Convert hash to string
-                String stringOut = ByteArrayToString(bytesHash);
-                // Get first 16 bits in string - value will be between 0000 (0) and FFFF (65535)
-                int workNumber = Integer.parseInt(stringOut.substring(0,4),16);
-                // Puzzle is not solved - could make the work harder by decreasing 20000
-                if (!(workNumber < 20000)){
-                    System.out.format("Puzzle not solved. Work number: %d", workNumber);
-                }
-                // Puzzle is solved
-                if (workNumber < 20000){
-                    System.out.format("Work number: %d. Puzzle solved!\n", workNumber);
-                }
-                // Check if blockchain has been updated
-                // if so - end this process and start over
-                // Extend time of work being done
-                Thread.sleep(3000);
-
-                socket.close();
-
-                /*
-                System.out.println("Hello from thread #2" + "\n\n");
-
-                // Multicast to other servers
-                Thread.sleep(3000);
-
-                // Send string to publicKey server
-                Socket publicKeySocket;
-                PrintStream publicKeyPrintStream;
-                publicKeySocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1001));
-                publicKeyPrintStream = new PrintStream(socket.getOutputStream());
-                publicKeyPrintStream.println("Hello from process 2");
-                publicKeyPrintStream.flush();
-                publicKeySocket.close();
-
-                Thread.sleep(1000);
-
-                // Send string to UVB server
-                Socket uvbSocket;
-                PrintStream uvbPrintStream;
-                uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1002));
-                uvbPrintStream = new PrintStream(socket.getOutputStream());
-                uvbPrintStream.println("Hello from process 2");
-                uvbPrintStream.flush();
-                uvbSocket.close();
-                */
-
-            } catch (Exception x){x.printStackTrace();}
-        }
-    }
 
     // Thread #3 - Handles incoming alternative blockchains. Compare to our existing blockchain and replace if the new one is more valid than our current.
     class BlockchainWorker extends Thread { // Class definition
@@ -853,36 +920,14 @@ public class BlockChainInput {
                 System.out.println("In Blockchain Worker");
 
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                String data = in.readLine ();
-                System.out.println("Got data: " + data);
+                String blockData = "";
+                String blockDataIn;
+                while((blockDataIn = in.readLine()) != null){
+                    blockData = blockData + "\n" + blockDataIn;
+                }
+                bc.blockchain = blockData;
+                System.out.println("         --NEW BLOCKCHAIN--\n" + bc.blockchain + "\n\n");
                 socket.close();
-
-                // System.out.println("Hello from thread #3" + "\n\n");
-
-                /*
-                // Multicast to other servers
-                Thread.sleep(3000);
-
-                // Send string to publicKey server
-                Socket publicKeySocket;
-                PrintStream publicKeyPrintStream;
-                publicKeySocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1002));
-                publicKeyPrintStream = new PrintStream(socket.getOutputStream());
-                publicKeyPrintStream.println("Hello from process 3");
-                publicKeyPrintStream.flush();
-                publicKeySocket.close();
-
-
-                // Send string to UVB server
-                Socket uvbSocket;
-                PrintStream uvbPrintStream;
-                uvbSocket = new Socket(serverName, UnverifiedBlockServerPortBase + (1003));
-                uvbPrintStream = new PrintStream(socket.getOutputStream());
-                uvbPrintStream.println("Hello from process 3");
-                uvbPrintStream.flush();
-                uvbSocket.close();
-
-                Thread.sleep(1000); */
 
             } catch (IOException x){x.printStackTrace();}
         }
